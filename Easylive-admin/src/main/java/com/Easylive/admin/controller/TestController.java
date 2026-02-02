@@ -1,4 +1,4 @@
-package com.Easylive.web.controller;
+package com.Easylive.admin.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class TestController {
     @RequestMapping("/test")
     public String test(){
-        return "Web模块创建成功！";
+        return "admin模块创建成功！";
     }
 }

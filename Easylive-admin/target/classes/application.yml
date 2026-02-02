@@ -1,14 +1,16 @@
 server:
-  port: 7071
+  port: 7070
+  servlet:
+    context-path: /admin
 spring:
   servlet:
     multipart:
       max-file-size: 10MB
       max-request-size: 15MB
   application:
-    name: Easylive-web
+    name: Easylive-admin
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/Easylive_1?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true&useSSL=false
+    url: jdbc:mysql://127.0.0.1:3306/Easylive?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true&useSSL=false
     username: root
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -43,3 +45,6 @@ project:
 log:
   root:
     level: debug
+admin:
+  account: admin
+  password: admin123
