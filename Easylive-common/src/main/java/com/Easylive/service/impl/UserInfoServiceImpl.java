@@ -212,6 +212,9 @@ public class UserInfoServiceImpl implements UserInfoService {
         userInfo.setStatus(UserStatusEnum.ENABLE.getStatus());
         userInfo.setSex(UserSexEnum.SECRECY.getType());
         userInfo.setTheme(Constants.ONE);
+        // 简单设定初始硬币数量
+        userInfo.setCurrentCoinCount(10);
+        userInfo.setTotalCoinCount(20);
 
         this.userInfoMapper.insert(userInfo);
     }

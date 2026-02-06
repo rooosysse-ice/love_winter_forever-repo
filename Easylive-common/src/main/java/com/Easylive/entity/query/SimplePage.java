@@ -1,5 +1,5 @@
 package com.Easylive.entity.query;
-import com.easylive.entity.enums.PageSize;
+import com.Easylive.entity.enums.PageSize;
 
 
 public class SimplePage {

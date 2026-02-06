@@ -5,7 +5,17 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/pom.xml" />
+        <option value="$PROJECT_DIR$/Easylive-web/pom.xml" />
+        <option value="$PROJECT_DIR$/Easylive-common/pom.xml" />
+        <option value="$PROJECT_DIR$/Easylive-admin/pom.xml" />
       </list>
+    </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/easylive-admin/pom.xml" />
+        <option value="$PROJECT_DIR$/easylive-common/pom.xml" />
+        <option value="$PROJECT_DIR$/easylive-web/pom.xml" />
+      </set>
     </option>
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
@@ -94,5 +104,5 @@
       </profile-state>
     </entry>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_17" default="true" project-jdk-name="17" project-jdk-type="JavaSDK" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" default="true" project-jdk-name="corretto-1.8" project-jdk-type="JavaSDK" />
 </project>
