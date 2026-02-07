@@ -3,6 +3,7 @@ package com.Easylive.component;
 import com.Easylive.entity.constants.Constants;
 import com.Easylive.entity.dto.TokenUserInfoDto;
 import com.Easylive.entity.enums.DateTimePatternEnum;
+import com.Easylive.entity.po.CategoryInfo;
 import com.Easylive.redis.RedisUtils;
 import com.Easylive.utils.DateUtil;
 import com.Easylive.utils.StringTools;
@@ -59,6 +60,10 @@ public class RedisComponent {
 
     public void cleanToken4Admin(String token) {
         redisUtils.delete(Constants.REDIS_KEY_TOKEN_ADMIN + token);
+    }
+
+    public void saveCategoryList(List<CategoryInfo> categoryList) {
+        redisUtils.set(Constants.REDIS_KEY_CATEGORY_LIST,categoryList);
     }
 
 }

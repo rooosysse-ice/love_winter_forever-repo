@@ -187,7 +187,7 @@ public class CategoryInfoServiceImpl implements CategoryInfoService {
             this.categoryInfoMapper.updateByCategoryId(bean, bean.getCategoryId());
         }
 
-        // TODO 刷新缓存
+        save2Redis();
     }
 
     @Override
@@ -198,7 +198,7 @@ public class CategoryInfoServiceImpl implements CategoryInfoService {
         categoryInfoQuery.setpCategoryId(categoryId);
         categoryInfoMapper.deleteByParam(categoryInfoQuery);
 
-        // TODO 刷新缓存
+        save2Redis();
     }
 
     @Override
@@ -215,7 +215,16 @@ public class CategoryInfoServiceImpl implements CategoryInfoService {
         }
         this.categoryInfoMapper.updateSortBatch(categoryInfoList);
 
-        // TODO 刷新缓存
+        save2Redis();
+
+    }
+
+    private void save2Redis() {
+        CategoryInfoQuery categoryInfoQuery = new CategoryInfoQuery();
+        categoryInfoQuery.setOrderBy("sort asc");
+        List<CategoryInfo> sourceCategoryInfoList = this.categoryInfoMapper.selectList(categoryInfoQuery);
+        List<CategoryInfo> categoryInfoList = convertLine2Tree(sourceCategoryInfoList, 0);
+        redisComponent.saveCategoryList(categoryInfoList);
     }
 
 

@@ -76,4 +76,14 @@ public class StringTools {
     public static final String getRandomNumber(Integer count) {
         return RandomStringUtils.random(count, false, true);
     }
+
+    public static boolean pathIsOk(String path) {
+        if (StringTools.isEmpty(path)) {
+            return true;
+        }
+        if (path.contains("../") || path.contains("..\\")) {
+            return false;
+        }
+        return true;
+    }
 }
