@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -227,5 +228,12 @@ public class CategoryInfoServiceImpl implements CategoryInfoService {
         redisComponent.saveCategoryList(categoryInfoList);
     }
 
-
+    @Override
+    public List<CategoryInfo> getAllCategoryList() {
+        List<CategoryInfo> categoryList = redisComponent.getCategoryList();
+        if (categoryList == null || categoryList.isEmpty()) {
+            save2Redis();
+        }
+        return redisComponent.getCategoryList();
+    }
 }

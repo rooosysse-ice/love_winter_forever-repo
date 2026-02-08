@@ -1,0 +1,163 @@
+package com.Easylive.service.impl;
+
+import com.Easylive.component.RedisComponent;
+import com.Easylive.entity.config.AppConfig;
+import com.Easylive.entity.dto.SysSettingDto;
+import com.Easylive.entity.enums.PageSize;
+import com.Easylive.entity.enums.ResponseCodeEnum;
+import com.Easylive.entity.po.*;
+import com.Easylive.entity.query.*;
+import com.Easylive.entity.vo.PaginationResultVO;
+import com.Easylive.exception.BusinessException;
+import com.Easylive.mappers.*;
+import com.Easylive.service.UserInfoService;
+import com.Easylive.service.VideoInfoService;
+import com.Easylive.utils.StringTools;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+
+/**
+ * 视频信息 业务接口实现
+ */
+@Service("videoInfoService")
+@Slf4j
+public class VideoInfoServiceImpl implements VideoInfoService {
+
+    private static ExecutorService executorService = Executors.newFixedThreadPool(10);
+
+    @Resource
+    private AppConfig appConfig;
+
+    @Resource
+    private VideoInfoMapper<VideoInfo, VideoInfoQuery> videoInfoMapper;
+
+    @Resource
+    private VideoInfoPostMapper<VideoInfoPost, VideoInfoPostQuery> videoInfoPostMapper;
+
+    @Resource
+    private VideoInfoFileMapper<VideoInfoFile, VideoInfoFileQuery> videoInfoFileMapper;
+
+    @Resource
+    private VideoInfoFilePostMapper<VideoInfoFilePost, VideoInfoFilePostQuery> videoInfoFilePostMapper;
+
+    @Resource
+    private UserInfoService userInfoService;
+
+    @Resource
+    private RedisComponent redisComponent;
+
+    /**
+     * 根据条件查询列表
+     */
+    @Override
+    public List<VideoInfo> findListByParam(VideoInfoQuery param) {
+        return this.videoInfoMapper.selectList(param);
+    }
+
+    /**
+     * 根据条件查询列表
+     */
+    @Override
+    public Integer findCountByParam(VideoInfoQuery param) {
+        return this.videoInfoMapper.selectCount(param);
+    }
+
+    /**
+     * 分页查询方法
+     */
+    @Override
+    public PaginationResultVO<VideoInfo> findListByPage(VideoInfoQuery param) {
+        int count = this.findCountByParam(param);
+        int pageSize = param.getPageSize() == null ? PageSize.SIZE15.getSize() : param.getPageSize();
+
+        SimplePage page = new SimplePage(param.getPageNo(), count, pageSize);
+        param.setSimplePage(page);
+        List<VideoInfo> list = this.findListByParam(param);
+        PaginationResultVO<VideoInfo> result = new PaginationResultVO(count, page.getPageSize(), page.getPageNo(), page.getPageTotal(), list);
+        return result;
+    }
+
+    /**
+     * 新增
+     */
+    @Override
+    public Integer add(VideoInfo bean) {
+        return this.videoInfoMapper.insert(bean);
+    }
+
+    /**
+     * 批量新增
+     */
+    @Override
+    public Integer addBatch(List<VideoInfo> listBean) {
+        if (listBean == null || listBean.isEmpty()) {
+            return 0;
+        }
+        return this.videoInfoMapper.insertBatch(listBean);
+    }
+
+    /**
+     * 批量新增或者修改
+     */
+    @Override
+    public Integer addOrUpdateBatch(List<VideoInfo> listBean) {
+        if (listBean == null || listBean.isEmpty()) {
+            return 0;
+        }
+        return this.videoInfoMapper.insertOrUpdateBatch(listBean);
+    }
+
+    /**
+     * 多条件更新
+     */
+    @Override
+    public Integer updateByParam(VideoInfo bean, VideoInfoQuery param) {
+        StringTools.checkParam(param);
+        return this.videoInfoMapper.updateByParam(bean, param);
+    }
+
+    /**
+     * 多条件删除
+     */
+    @Override
+    public Integer deleteByParam(VideoInfoQuery param) {
+        StringTools.checkParam(param);
+        return this.videoInfoMapper.deleteByParam(param);
+    }
+
+    /**
+     * 根据VideoId获取对象
+     */
+    @Override
+    public VideoInfo getVideoInfoByVideoId(String videoId) {
+        return this.videoInfoMapper.selectByVideoId(videoId);
+    }
+
+    /**
+     * 根据VideoId修改
+     */
+    @Override
+    public Integer updateVideoInfoByVideoId(VideoInfo bean, String videoId) {
+        return this.videoInfoMapper.updateByVideoId(bean, videoId);
+    }
+
+    /**
+     * 根据VideoId删除
+     */
+    @Override
+    public Integer deleteVideoInfoByVideoId(String videoId) {
+        return this.videoInfoMapper.deleteByVideoId(videoId);
+    }
+
+
+}

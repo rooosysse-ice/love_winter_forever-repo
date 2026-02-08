@@ -61,4 +61,8 @@ public class Constants {
 
     public static final String IMAGE_THUMBNAIL_SUFFIX = "_thumbnail.jpg";
 
+    //系统设置
+    public static final String REDIS_KEY_SYS_SETTING = REDIS_KEY_PREFIX + "sysSetting:";
+
+
 }
