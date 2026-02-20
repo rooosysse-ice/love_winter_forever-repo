@@ -196,7 +196,7 @@ public class CategoryInfoServiceImpl implements CategoryInfoService {
         // TODO 查询分类下是否有视频
 
         CategoryInfoQuery categoryInfoQuery = new CategoryInfoQuery();
-        categoryInfoQuery.setpCategoryId(categoryId);
+        categoryInfoQuery.setCategoryIdOrPCategoryId(categoryId);
         categoryInfoMapper.deleteByParam(categoryInfoQuery);
 
         save2Redis();

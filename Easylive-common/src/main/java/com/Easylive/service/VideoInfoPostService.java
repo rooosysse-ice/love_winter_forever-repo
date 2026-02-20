@@ -70,4 +70,8 @@ public interface VideoInfoPostService {
      * 根据VideoId删除
      */
     Integer deleteVideoInfoPostByVideoId(String videoId);
+
+    void saveVideoInfo(VideoInfoPost videoInfo, List<VideoInfoFilePost> fileInfoList);
+
+    void transferVideoFile(VideoInfoFilePost videoInfoFilePost) throws IOException;
 }

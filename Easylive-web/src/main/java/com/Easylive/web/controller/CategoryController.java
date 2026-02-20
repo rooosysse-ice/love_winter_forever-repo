@@ -24,9 +24,10 @@ public class CategoryController extends ABaseController {
     @Resource
     private CategoryInfoService categoryInfoService;
 
-    @RequestMapping("/loadCategory")
-    public ResponseVO loadAllCategory(CategoryInfoQuery categoryInfo) {
-        return getSuccessResponseVO(categoryInfoService.getAllCategoryList());
+    @RequestMapping("/loadAllCategory")
+    public ResponseVO loadAllCategory() {
+        List<CategoryInfo> categoryInfoList = categoryInfoService.getAllCategoryList();
+        return getSuccessResponseVO(categoryInfoList);
     }
 
 }
