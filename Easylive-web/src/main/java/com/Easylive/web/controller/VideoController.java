@@ -76,7 +76,7 @@ public class VideoController extends ABaseController {
         }
 
         //TODO:获取用户行为：是否点赞、是否收藏等
-        VideoInfoResultVo resultVo = new VideoInfoResultVo(videoInfo);
+        VideoInfoResultVo resultVo = new VideoInfoResultVo(videoInfo,new ArrayList<>());
         return getSuccessResponseVO(resultVo);
     }
 
@@ -87,6 +87,11 @@ public class VideoController extends ABaseController {
         videoInfoQuery.setOrderBy("file_index asc");
         List<VideoInfoFile> fileList = videoInfoFileService.findListByParam(videoInfoQuery);
         return getSuccessResponseVO(fileList);
+    }
+
+    @RequestMapping("/reportVideoPlayOnline")
+    public ResponseVO reportVideoPlayOnline(@NotEmpty String fileId, String deviceId) {
+        return getSuccessResponseVO(null);
     }
 
 

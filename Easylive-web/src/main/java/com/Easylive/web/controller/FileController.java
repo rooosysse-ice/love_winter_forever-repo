@@ -8,14 +8,17 @@ import com.Easylive.entity.dto.TokenUserInfoDto;
 import com.Easylive.entity.dto.UploadingFileDto;
 import com.Easylive.entity.enums.DateTimePatternEnum;
 import com.Easylive.entity.enums.ResponseCodeEnum;
+import com.Easylive.entity.po.VideoInfoFile;
 import com.Easylive.entity.vo.ResponseVO;
 import com.Easylive.exception.BusinessException;
+import com.Easylive.service.VideoInfoFileService;
 import com.Easylive.utils.DateUtil;
 import com.Easylive.utils.FFmpegUtils;
 import com.Easylive.utils.StringTools;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,6 +47,9 @@ public class FileController extends ABaseController {
 
     @Resource
     private FFmpegUtils fFmpegUtils;
+
+    @Resource
+    private VideoInfoFileService videoInfoFileService;
 
     @RequestMapping("/getResource")
     public void getResource(HttpServletResponse response, @NotEmpty String sourceName) {
@@ -137,6 +143,22 @@ public class FileController extends ABaseController {
             fFmpegUtils.createImageThumbnail(filePath);
         }
         return getSuccessResponseVO(Constants.FILE_COVER + day + "/" + realFileName);
+    }
+
+    @RequestMapping("/videoResource/{fileId}")
+    public void getVideoResource(HttpServletResponse response, @PathVariable @NotEmpty String fileId) {
+        VideoInfoFile videoInfoFile = videoInfoFileService.getVideoInfoFileByFileId(fileId);
+        String filePath = videoInfoFile.getFilePath();
+        readFile(response, filePath + "/" + Constants.M3U8_NAME);
+
+        //TODO:更新视频的阅读信息
+    }
+
+    @RequestMapping("/videoResource/{fileId}/{ts}")
+    public void getVideoResourceTs(HttpServletResponse response, @PathVariable @NotEmpty String fileId, @PathVariable @NotNull String ts) {
+        VideoInfoFile videoInfoFile = videoInfoFileService.getVideoInfoFileByFileId(fileId);
+        String filePath = videoInfoFile.getFilePath();
+        readFile(response, filePath + "/" + ts);
     }
 
 }
