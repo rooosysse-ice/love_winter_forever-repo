@@ -3,6 +3,7 @@ package com.Easylive.service.impl;
 import com.Easylive.component.RedisComponent;
 import com.Easylive.entity.config.AppConfig;
 import com.Easylive.entity.constants.Constants;
+import com.Easylive.entity.dto.SysSettingDto;
 import com.Easylive.entity.dto.UploadingFileDto;
 import com.Easylive.entity.enums.*;
 import com.Easylive.entity.po.VideoInfo;
@@ -339,6 +340,92 @@ public class VideoInfoPostServiceImpl implements VideoInfoPostService {
                 videoInfoPostMapper.updateByVideoId(videoUpdate, videoInfoFile.getVideoId());
             }
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void auditVideo(String videoId, Integer status, String reason) {
+        VideoStatusEnum videoStatusEnum = VideoStatusEnum.getByStatus(status);
+        if (videoStatusEnum == null) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        VideoInfoPost videoInfoPost = new VideoInfoPost();
+        videoInfoPost.setStatus(status);
+
+        VideoInfoPostQuery videoInfoPostQuery = new VideoInfoPostQuery();
+        videoInfoPostQuery.setStatus(VideoStatusEnum.STATUS2.getStatus());
+        videoInfoPostQuery.setVideoId(videoId);
+        Integer audioCount = this.videoInfoPostMapper.updateByParam(videoInfoPost, videoInfoPostQuery);
+        if (audioCount == 0) {
+            throw new BusinessException("审核失败，请稍后重试");
+        }
+        /**
+         * 更新视频状态
+         */
+        VideoInfoFilePost videoInfoFilePost = new VideoInfoFilePost();
+        videoInfoFilePost.setUpdateType(VideoFileUpdateTypeEnum.NO_UPDATE.getStatus());
+
+        VideoInfoFilePostQuery filePostQuery = new VideoInfoFilePostQuery();
+        filePostQuery.setVideoId(videoId);
+        this.videoInfoFilePostMapper.updateByParam(videoInfoFilePost, filePostQuery);
+
+        if (VideoStatusEnum.STATUS4 == videoStatusEnum) {
+            return;
+        }
+        VideoInfoPost infoPost = this.videoInfoPostMapper.selectByVideoId(videoId);
+        /**
+         * 第一次发布增加用户硬币
+         */
+        VideoInfo dbVideoInfo = this.videoInfoMapper.selectByVideoId(videoId);
+        if (dbVideoInfo == null) {
+            SysSettingDto sysSettingDto = redisComponent.getSysSettingDto();
+            // TODO：增加用户硬币
+        }
+
+        /**
+         * 将发布信息复制到正式表信息
+         */
+        VideoInfo videoInfo = CopyTools.copy(infoPost, VideoInfo.class);
+        this.videoInfoMapper.insertOrUpdate(videoInfo);
+
+        /**
+         * 更新视频信息 先删除再添加
+         */
+        VideoInfoFileQuery videoInfoFileQuery = new VideoInfoFileQuery();
+        videoInfoFileQuery.setVideoId(videoId);
+        this.videoInfoFileMapper.deleteByParam(videoInfoFileQuery);
+
+
+        /**
+         * 查询发布表中的视频信息
+         */
+        VideoInfoFilePostQuery videoInfoFilePostQuery = new VideoInfoFilePostQuery();
+        videoInfoFilePostQuery.setVideoId(videoId);
+        List<VideoInfoFilePost> videoInfoFilePostList = this.videoInfoFilePostMapper.selectList(videoInfoFilePostQuery);
+
+        List<VideoInfoFile> videoInfoFileList = CopyTools.copyList(videoInfoFilePostList, VideoInfoFile.class);
+        this.videoInfoFileMapper.insertBatch(videoInfoFileList);
+
+        /**
+         * 删除文件
+         */
+        List<String> filePathList = redisComponent.getDelFileList(videoId);
+        if (filePathList != null) {
+            for (String path : filePathList) {
+                File file = new File(appConfig.getProjectFolder() + Constants.FILE_FOLDER + path);
+                if (file.exists()) {
+                    try {
+                        FileUtils.deleteDirectory(file);
+                    } catch (IOException e) {
+                        log.error("删除文件失败", e);
+                    }
+                }
+            }
+        }
+        redisComponent.cleanDelFileList(videoId);
+
+        // TODO:保存信息到es
+
     }
 
     private boolean changeVideoInfo(VideoInfoPost videoInfoPost) {

@@ -130,9 +130,19 @@ public class RedisComponent {
     public void addFile2DelQueue(String videoId, List<String> fileIdList) {
         redisUtils.lpushAll(Constants.REDIS_KEY_FILE_DEL + videoId, fileIdList, Constants.REDIS_KEY_EXPIRES_DAY * 7);
     }
+    public List<String> getDelFileList(String videoId) {
+        List<String> filePathList = redisUtils.getQueueList(Constants.REDIS_KEY_FILE_DEL + videoId);
+        return filePathList;
+    }
+
+    public void cleanDelFileList(String videoId) {
+        redisUtils.delete(Constants.REDIS_KEY_FILE_DEL + videoId);
+    }
 
     public void addFile2TransferQueue(List<VideoInfoFilePost> fileList) {
         redisUtils.lpushAll(Constants.REDIS_KEY_QUEUE_TRANSFER, fileList, 0);
     }
+
+
 
 }
