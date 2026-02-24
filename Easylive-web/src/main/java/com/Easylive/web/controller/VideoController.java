@@ -4,14 +4,17 @@ import com.Easylive.component.RedisComponent;
 import com.Easylive.entity.constants.Constants;
 import com.Easylive.entity.dto.TokenUserInfoDto;
 import com.Easylive.entity.enums.*;
+import com.Easylive.entity.po.UserAction;
 import com.Easylive.entity.po.VideoInfo;
 import com.Easylive.entity.po.VideoInfoFile;
+import com.Easylive.entity.query.UserActionQuery;
 import com.Easylive.entity.query.VideoInfoFileQuery;
 import com.Easylive.entity.query.VideoInfoQuery;
 import com.Easylive.entity.vo.PaginationResultVO;
 import com.Easylive.entity.vo.ResponseVO;
 import com.Easylive.entity.vo.VideoInfoResultVo;
 import com.Easylive.exception.BusinessException;
+import com.Easylive.service.UserActionService;
 import com.Easylive.service.VideoInfoFileService;
 import com.Easylive.service.VideoInfoService;
 import com.Easylive.utils.CopyTools;
@@ -41,6 +44,9 @@ public class VideoController extends ABaseController {
 
     @Resource
     private RedisComponent redisComponent;
+
+    @Resource
+    private UserActionService userActionService;
 
 
     @RequestMapping("/loadRecommendVideo")
@@ -74,8 +80,18 @@ public class VideoController extends ABaseController {
         if (null == videoInfo) {
             throw new BusinessException(ResponseCodeEnum.CODE_404);
         }
+        TokenUserInfoDto userInfoDto = getTokenUserInfoDto();
 
-        //TODO:获取用户行为：是否点赞、是否收藏等
+        List<UserAction> userActionList = new ArrayList<>();
+        if (userInfoDto != null) {
+            UserActionQuery actionQuery = new UserActionQuery();
+            actionQuery.setVideoId(videoId);
+            actionQuery.setUserId(userInfoDto.getUserId());
+            actionQuery.setActionTypeArray(new Integer[]{UserActionTypeEnum.VIDEO_LIKE.getType(), UserActionTypeEnum.VIDEO_COLLECT.getType(),
+                    UserActionTypeEnum.VIDEO_COIN.getType(),});
+            userActionList = userActionService.findListByParam(actionQuery);
+        }
+
         VideoInfoResultVo resultVo = new VideoInfoResultVo(videoInfo,new ArrayList<>());
         return getSuccessResponseVO(resultVo);
     }
