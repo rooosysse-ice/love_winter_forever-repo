@@ -107,7 +107,8 @@ public class VideoController extends ABaseController {
 
     @RequestMapping("/reportVideoPlayOnline")
     public ResponseVO reportVideoPlayOnline(@NotEmpty String fileId, String deviceId) {
-        return getSuccessResponseVO(null);
+        Integer count = redisComponent.reportVideoPlayOnline(fileId, deviceId);
+        return getSuccessResponseVO(count);
     }
 
 

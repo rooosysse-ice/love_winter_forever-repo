@@ -49,7 +49,7 @@ public class Constants {
 
     public static final String TOKEN_ADMIN = "adminToken";
 
-    public static final String REDIS_KEY_PREFIX = "easylive:";
+    public static final String REDIS_KEY_PREFIX = "Easylive:";
 
     public static final String REDIS_KEY_UPLOADING_FILE = REDIS_KEY_PREFIX + "uploading:";
     public static final String REDIS_KEY_CHECK_CODE = REDIS_KEY_PREFIX + "checkcode:";
@@ -79,4 +79,14 @@ public class Constants {
     public static final String TS_NAME = "index.ts";
 
     public static final String M3U8_NAME = "index.m3u8";
+
+
+    //视频在线
+    public static final String REDIS_KEY_VIDEO_PLAY_COUNT_ONLINE_PREIFX = REDIS_KEY_PREFIX + "video:play:online:";
+
+    public static final String REDIS_KEY_VIDEO_PLAY_COUNT_ONLINE = REDIS_KEY_VIDEO_PLAY_COUNT_ONLINE_PREIFX + "count:%s";
+
+    public static final String REDIS_KEY_VIDEO_PLAY_COUNT_USER_PREFIX = "user:";
+
+    public static final String REDIS_KEY_VIDEO_PLAY_COUNT_USER = REDIS_KEY_VIDEO_PLAY_COUNT_ONLINE_PREIFX + REDIS_KEY_VIDEO_PLAY_COUNT_USER_PREFIX + "%s:%s";
 }

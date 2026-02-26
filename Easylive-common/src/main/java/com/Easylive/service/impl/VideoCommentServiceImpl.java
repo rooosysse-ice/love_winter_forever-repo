@@ -1,6 +1,5 @@
 package com.Easylive.service.impl;
 
-import com.Easylive.component.EsSearchComponent;
 import com.Easylive.entity.constants.Constants;
 import com.Easylive.entity.enums.CommentTopTypeEnum;
 import com.Easylive.entity.enums.PageSize;
@@ -18,7 +17,6 @@ import com.Easylive.exception.BusinessException;
 import com.Easylive.mappers.UserInfoMapper;
 import com.Easylive.mappers.VideoCommentMapper;
 import com.Easylive.mappers.VideoInfoMapper;
-import com.Easylive.service.UserMessageService;
 import com.Easylive.service.VideoCommentService;
 import com.Easylive.utils.StringTools;
 import org.springframework.stereotype.Service;
@@ -44,11 +42,6 @@ public class VideoCommentServiceImpl implements VideoCommentService {
     @Resource
     private VideoInfoMapper<VideoInfo, VideoInfoQuery> videoInfoMapper;
 
-    @Resource
-    private UserMessageService userMessageService;
-
-    @Resource
-    private EsSearchComponent esSearchComponent;
 
     /**
      * 根据条件查询列表

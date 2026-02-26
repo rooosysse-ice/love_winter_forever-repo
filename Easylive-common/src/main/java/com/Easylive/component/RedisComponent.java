@@ -123,6 +123,27 @@ public class RedisComponent {
         return sysSettingDto;
     }
 
+    public Integer reportVideoPlayOnline(String fileId, String deviceId) {
+        String userPlayOnlineKey = String.format(Constants.REDIS_KEY_VIDEO_PLAY_COUNT_USER, fileId, deviceId);
+        String playOnlineCountKey = String.format(Constants.REDIS_KEY_VIDEO_PLAY_COUNT_ONLINE, fileId);
+
+        if (!redisUtils.keyExists(userPlayOnlineKey)) {
+            redisUtils.setex(userPlayOnlineKey, fileId, Constants.REDIS_KEY_EXPIRES_ONE_SECONDS * 8);
+            return redisUtils.incrementex(playOnlineCountKey, Constants.REDIS_KEY_EXPIRES_ONE_SECONDS * 10).intValue();
+        }
+        //给视频在线总数量续期
+        redisUtils.expire(playOnlineCountKey, Constants.REDIS_KEY_EXPIRES_ONE_SECONDS * 10);
+        //给播放用户续期
+        redisUtils.expire(userPlayOnlineKey, Constants.REDIS_KEY_EXPIRES_ONE_SECONDS * 8);
+        Integer count = (Integer) redisUtils.get(playOnlineCountKey);
+        return count == null ? 1 : count;
+    }
+
+    // 减少在线人数
+    public void decrementPlayOnlineCount(String key) {
+        redisUtils.decrement(key);
+    }
+
     public void delVideoFileInfo(String userId, String uploadId) {
         redisUtils.delete(Constants.REDIS_KEY_UPLOADING_FILE + userId + uploadId);
     }
