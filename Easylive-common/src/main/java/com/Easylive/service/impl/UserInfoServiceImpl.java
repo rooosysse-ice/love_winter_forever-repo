@@ -285,6 +285,7 @@ public class UserInfoServiceImpl implements UserInfoService {
         if (null == userInfo) {
             throw new BusinessException(ResponseCodeEnum.CODE_404);
         }
+        // 播放数
         CountInfoDto countInfoDto = videoInfoMapper.selectSumCountInfo(userId);
         CopyTools.copyProperties(countInfoDto, userInfo);
 
