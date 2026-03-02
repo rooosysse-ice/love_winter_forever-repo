@@ -80,6 +80,8 @@ public class Constants {
 
     public static final String M3U8_NAME = "index.m3u8";
 
+    public static final Integer UPDATE_NICK_NAME_COIN = 5;
+
 
     //视频在线
     public static final String REDIS_KEY_VIDEO_PLAY_COUNT_ONLINE_PREIFX = REDIS_KEY_PREFIX + "video:play:online:";

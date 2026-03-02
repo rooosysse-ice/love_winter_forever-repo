@@ -111,4 +111,9 @@ public interface UserInfoService {
 
     TokenUserInfoDto login(String email, String password, String ip);
 
+
+    void updateUserInfo(UserInfo userInfo, TokenUserInfoDto tokenUserInfoDto);
+
+    UserInfo getUserDetailInfo(String currentUserId, String userId);
+
 }

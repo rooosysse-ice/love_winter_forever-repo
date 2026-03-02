@@ -2,16 +2,22 @@ package com.Easylive.service.impl;
 
 import com.Easylive.component.RedisComponent;
 import com.Easylive.entity.constants.Constants;
+import com.Easylive.entity.dto.CountInfoDto;
 import com.Easylive.entity.dto.TokenUserInfoDto;
 import com.Easylive.entity.enums.PageSize;
 import com.Easylive.entity.enums.ResponseCodeEnum;
 import com.Easylive.entity.enums.UserSexEnum;
 import com.Easylive.entity.enums.UserStatusEnum;
+import com.Easylive.entity.po.UserFocus;
 import com.Easylive.entity.po.UserInfo;
+import com.Easylive.entity.po.VideoInfo;
 import com.Easylive.entity.query.SimplePage;
+import com.Easylive.entity.query.UserFocusQuery;
 import com.Easylive.entity.query.UserInfoQuery;
+import com.Easylive.entity.query.VideoInfoQuery;
 import com.Easylive.entity.vo.PaginationResultVO;
 import com.Easylive.exception.BusinessException;
+import com.Easylive.mappers.UserFocusMapper;
 import com.Easylive.mappers.UserInfoMapper;
 import com.Easylive.service.UserInfoService;
 import com.Easylive.utils.CopyTools;
@@ -35,6 +41,12 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Resource
     private UserInfoMapper<UserInfo, UserInfoQuery> userInfoMapper;
+
+    @Resource
+    private UserFocusMapper<UserFocus, UserFocusQuery> userFocusMapper;
+
+    @Resource
+    private com.Easylive.mappers.VideoInfoMapper<VideoInfo, VideoInfoQuery> videoInfoMapper;
 
 
     /**
@@ -236,6 +248,58 @@ public class UserInfoServiceImpl implements UserInfoService {
         TokenUserInfoDto tokenUserInfoDto = CopyTools.copy(userInfo, TokenUserInfoDto.class);
         redisComponent.saveTokenInfo(tokenUserInfoDto);
         return tokenUserInfoDto;
+    }
+
+    @Override
+    @Transactional
+    public void updateUserInfo(UserInfo userInfo, TokenUserInfoDto tokenUserInfoDto) {
+        UserInfo dbInfo = this.userInfoMapper.selectByUserId(userInfo.getUserId());
+        if (!dbInfo.getNickName().equals(userInfo.getNickName()) && dbInfo.getCurrentCoinCount() < Constants.UPDATE_NICK_NAME_COIN) {
+            throw new BusinessException("硬币不足，无法修改昵称");
+        }
+        if (!dbInfo.getNickName().equals(userInfo.getNickName())) {
+            Integer count = this.userInfoMapper.updateCoinCountInfo(userInfo.getUserId(), -Constants.UPDATE_NICK_NAME_COIN);
+            if (count == 0) {
+                throw new BusinessException("硬币不足，无法修改昵称");
+            }
+        }
+        this.userInfoMapper.updateByUserId(userInfo, userInfo.getUserId());
+
+        Boolean updateTokenInfo = false;
+        if (!userInfo.getAvatar().equals(tokenUserInfoDto.getAvatar())) {
+            tokenUserInfoDto.setAvatar(userInfo.getAvatar());
+            updateTokenInfo = true;
+        }
+        if (!tokenUserInfoDto.getNickName().equals(userInfo.getNickName())) {
+            tokenUserInfoDto.setNickName(userInfo.getNickName());
+            updateTokenInfo = true;
+        }
+        if (updateTokenInfo) {
+            redisComponent.updateTokenInfo(tokenUserInfoDto);
+        }
+    }
+
+    @Override
+    public UserInfo getUserDetailInfo(String currentUserId, String userId) {
+        UserInfo userInfo = getUserInfoByUserId(userId);
+        if (null == userInfo) {
+            throw new BusinessException(ResponseCodeEnum.CODE_404);
+        }
+        CountInfoDto countInfoDto = videoInfoMapper.selectSumCountInfo(userId);
+        CopyTools.copyProperties(countInfoDto, userInfo);
+
+        Integer fansCount = userFocusMapper.selectFansCount(userId);
+        Integer focusCount = userFocusMapper.selectFocusCount(userId);
+        userInfo.setFansCount(fansCount);
+        userInfo.setFocusCount(focusCount);
+
+        if (currentUserId == null) {
+            userInfo.setHaveFocus(false);
+        } else {
+            UserFocus userFocus = userFocusMapper.selectByUserIdAndFocusUserId(currentUserId, userId);
+            userInfo.setHaveFocus(userFocus == null ? false : true);
+        }
+        return userInfo;
     }
 
 
