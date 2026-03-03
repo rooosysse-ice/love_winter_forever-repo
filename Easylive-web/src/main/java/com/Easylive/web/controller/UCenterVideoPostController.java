@@ -9,6 +9,7 @@ import com.Easylive.entity.query.VideoInfoFilePostQuery;
 import com.Easylive.entity.query.VideoInfoPostQuery;
 import com.Easylive.entity.vo.PaginationResultVO;
 import com.Easylive.entity.vo.ResponseVO;
+import com.Easylive.entity.vo.VideoPostEditInfoVo;
 import com.Easylive.entity.vo.VideoStatusCountInfoVO;
 import com.Easylive.exception.BusinessException;
 import com.Easylive.service.VideoInfoFilePostService;
@@ -104,6 +105,37 @@ public class UCenterVideoPostController extends ABaseController {
         countInfo.setAuditFailCount(auditFailCount);
         countInfo.setInProgress(inProgress);
         return getSuccessResponseVO(countInfo);
+    }
+
+    @RequestMapping("/getVideoByVideoId")
+    public ResponseVO getVideoByVideoId(@NotEmpty String videoId) {
+        TokenUserInfoDto tokenUserInfoDto = getTokenUserInfoDto();
+        VideoInfoPost videoInfoPost = this.videoInfoPostService.getVideoInfoPostByVideoId(videoId);
+        if (videoInfoPost == null || !videoInfoPost.getUserId().equals(tokenUserInfoDto.getUserId())) {
+            throw new BusinessException(ResponseCodeEnum.CODE_404);
+        }
+        VideoInfoFilePostQuery videoInfoFilePostQuery = new VideoInfoFilePostQuery();
+        videoInfoFilePostQuery.setVideoId(videoId);
+        videoInfoFilePostQuery.setOrderBy("file_index asc");
+        List<VideoInfoFilePost> videoInfoFilePostList = this.videoInfoFilePostService.findListByParam(videoInfoFilePostQuery);
+        VideoPostEditInfoVo vo = new VideoPostEditInfoVo();
+        vo.setVideoInfo(videoInfoPost);
+        vo.setVideoInfoFileList(videoInfoFilePostList);
+        return getSuccessResponseVO(vo);
+    }
+
+    @RequestMapping("/saveVideoInteraction")
+    public ResponseVO saveVideoInteraction(@NotEmpty String videoId, String interaction) {
+        TokenUserInfoDto tokenUserInfoDto = getTokenUserInfoDto();
+        videoInfoService.changeInteraction(videoId, tokenUserInfoDto.getUserId(), interaction);
+        return getSuccessResponseVO(null);
+    }
+
+    @RequestMapping("/deleteVideo")
+    public ResponseVO deleteVideo(@NotEmpty String videoId) {
+        TokenUserInfoDto tokenUserInfoDto = getTokenUserInfoDto();
+        videoInfoService.deleteVideo(videoId, tokenUserInfoDto.getUserId());
+        return getSuccessResponseVO(null);
     }
 
 
