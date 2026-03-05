@@ -1,7 +1,9 @@
 package com.Easylive.service.impl;
 
+import com.Easylive.component.EsSearchComponent;
 import com.Easylive.entity.enums.PageSize;
 import com.Easylive.entity.enums.ResponseCodeEnum;
+import com.Easylive.entity.enums.SearchOrderTypeEnum;
 import com.Easylive.entity.enums.UserActionTypeEnum;
 import com.Easylive.entity.po.UserAction;
 import com.Easylive.entity.po.VideoComment;
@@ -18,6 +20,7 @@ import com.Easylive.mappers.VideoCommentMapper;
 import com.Easylive.mappers.VideoInfoMapper;
 import com.Easylive.service.UserActionService;
 import com.Easylive.utils.StringTools;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +46,8 @@ public class UserActionServiceImpl implements UserActionService {
 
     @Resource
     private UserInfoMapper userInfoMapper;
+    @Autowired
+    private EsSearchComponent esSearchComponent;
 
     /**
      * 根据条件查询列表
@@ -203,8 +208,7 @@ public class UserActionServiceImpl implements UserActionService {
                 videoInfoMapper.updateCountInfo(bean.getVideoId(), actionTypeEnum.getField(), changeCount);
 
                 if (actionTypeEnum == UserActionTypeEnum.VIDEO_COLLECT) {
-                    //TODO 更新es收藏数量
-
+                    esSearchComponent.updateDocCount(videoInfo.getVideoId(), SearchOrderTypeEnum.VIDEO_COLLECT.getField(), changeCount);
                 }
                 break;
             // 投币

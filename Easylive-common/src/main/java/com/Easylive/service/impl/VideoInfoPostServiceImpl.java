@@ -1,5 +1,6 @@
 package com.Easylive.service.impl;
 
+import com.Easylive.component.EsSearchComponent;
 import com.Easylive.component.RedisComponent;
 import com.Easylive.entity.config.AppConfig;
 import com.Easylive.entity.constants.Constants;
@@ -66,6 +67,9 @@ public class VideoInfoPostServiceImpl implements VideoInfoPostService {
 
     @Resource
     private UserInfoMapper userInfoMapper;
+
+    @Resource
+    private EsSearchComponent esSearchComponent;
 
     /**
      * 根据条件查询列表
@@ -423,8 +427,8 @@ public class VideoInfoPostServiceImpl implements VideoInfoPostService {
             }
         }
         redisComponent.cleanDelFileList(videoId);
-
-        // TODO:保存信息到es
+        //先写数据库再写es可以保持一致性
+        esSearchComponent.saveDoc(videoInfo);
 
     }
 

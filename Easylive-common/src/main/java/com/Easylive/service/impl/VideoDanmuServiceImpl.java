@@ -1,8 +1,10 @@
 package com.Easylive.service.impl;
 
+import com.Easylive.component.EsSearchComponent;
 import com.Easylive.entity.constants.Constants;
 import com.Easylive.entity.enums.PageSize;
 import com.Easylive.entity.enums.ResponseCodeEnum;
+import com.Easylive.entity.enums.SearchOrderTypeEnum;
 import com.Easylive.entity.enums.UserActionTypeEnum;
 import com.Easylive.entity.po.VideoDanmu;
 import com.Easylive.entity.po.VideoInfo;
@@ -15,6 +17,7 @@ import com.Easylive.mappers.VideoDanmuMapper;
 import com.Easylive.mappers.VideoInfoMapper;
 import com.Easylive.service.VideoDanmuService;
 import com.Easylive.utils.StringTools;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +36,9 @@ public class VideoDanmuServiceImpl implements VideoDanmuService {
 
     @Resource
     private VideoInfoMapper<VideoInfo, VideoInfoQuery> videoInfoMapper;
+
+    @Resource
+    private EsSearchComponent esSearchComponent;
 
 
     /**
@@ -152,7 +158,7 @@ public class VideoDanmuServiceImpl implements VideoDanmuService {
         this.videoDanmuMapper.insert(bean);
         this.videoInfoMapper.updateCountInfo(bean.getVideoId(), UserActionTypeEnum.VIDEO_DANMU.getField(), 1);
 
-        //TODO 更新es弹幕数量
+        esSearchComponent.updateDocCount(bean.getVideoId(), SearchOrderTypeEnum.VIDEO_DANMU.getField(), 1);
 
     }
 
