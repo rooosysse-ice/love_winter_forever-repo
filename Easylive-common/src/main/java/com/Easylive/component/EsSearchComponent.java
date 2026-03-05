@@ -3,6 +3,7 @@ package com.Easylive.component;
 import com.Easylive.entity.config.AppConfig;
 import com.Easylive.entity.dto.VideoInfoEsDto;
 import com.Easylive.entity.enums.PageSize;
+import com.Easylive.entity.enums.SearchOrderTypeEnum;
 import com.Easylive.entity.po.UserInfo;
 import com.Easylive.entity.po.VideoInfo;
 import com.Easylive.entity.query.SimplePage;
@@ -211,6 +212,79 @@ public class EsSearchComponent {
         }
 
     }
-    
+
+    public PaginationResultVO<VideoInfo> search(Boolean highlight, String keyword, Integer orderType, Integer pageNo, Integer pageSize) {
+        try {
+
+            SearchOrderTypeEnum searchOrderTypeEnum = SearchOrderTypeEnum.getByType(orderType);
+
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            //关键字
+            searchSourceBuilder.query(QueryBuilders.multiMatchQuery(keyword, "videoName", "tags"));
+
+            if (highlight) {
+                //高亮
+                HighlightBuilder highlightBuilder = new HighlightBuilder();
+                highlightBuilder.field("videoName"); // 替换为你想要高亮的字段名
+                highlightBuilder.preTags("<span class='highlight'>");
+                highlightBuilder.postTags("</span>");
+                searchSourceBuilder.highlighter(highlightBuilder);
+            }
+
+
+            //排序
+            if (orderType != null) {
+                searchSourceBuilder.sort(searchOrderTypeEnum.getField(), SortOrder.DESC); // 第一个排序字段，升序
+            }else{
+                searchSourceBuilder.sort("_score", SortOrder.DESC); // 第一个排序字段，倒序
+            }
+            pageNo = pageNo == null ? 1 : pageNo;
+            //分页查询
+            pageSize = pageSize == null ? PageSize.SIZE20.getSize() : pageSize;
+            searchSourceBuilder.size(pageSize);
+            searchSourceBuilder.from((pageNo - 1) * pageSize);
+
+            SearchRequest searchRequest = new SearchRequest(appConfig.getEsIndexVideoName());
+            searchRequest.source(searchSourceBuilder);
+
+            // 执行查询
+            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+
+            // 处理查询结果
+            SearchHits hits = searchResponse.getHits();
+            Integer totalCount = (int) hits.getTotalHits().value;
+
+            List<VideoInfo> videoInfoList = new ArrayList<>();
+
+            List<String> userIdList = new ArrayList<>();
+            for (SearchHit hit : hits.getHits()) {
+                VideoInfo videoInfo = JsonUtils.convertJson2Obj(hit.getSourceAsString(), VideoInfo.class);
+                if (hit.getHighlightFields().get("videoName") != null) {
+                    videoInfo.setVideoName(hit.getHighlightFields().get("videoName").fragments()[0].string());
+                }
+                videoInfoList.add(videoInfo);
+
+                userIdList.add(videoInfo.getUserId());
+            }
+            UserInfoQuery userInfoQuery = new UserInfoQuery();
+            userInfoQuery.setUserIdList(userIdList);
+            List<UserInfo> userInfoList = userInfoMapper.selectList(userInfoQuery);
+            Map<String, UserInfo> userInfoMap = userInfoList.stream().collect(Collectors.toMap(item -> item.getUserId(), Function.identity(), (data1, data2) -> data2));
+            videoInfoList.forEach(item -> {
+                UserInfo userInfo = userInfoMap.get(item.getUserId());
+                if (userInfo != null) {
+                    item.setNickName(userInfo.getNickName());
+                }
+            });
+            SimplePage page = new SimplePage(pageNo, totalCount, pageSize);
+            PaginationResultVO<VideoInfo> result = new PaginationResultVO(totalCount, page.getPageSize(), page.getPageNo(), page.getPageTotal(), videoInfoList);
+            return result;
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("查询视频到es失败", e);
+            throw new BusinessException("查询失败");
+        }
+    }
 
 }

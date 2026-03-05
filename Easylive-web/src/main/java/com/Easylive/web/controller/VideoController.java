@@ -1,5 +1,6 @@
 package com.Easylive.web.controller;
 
+import com.Easylive.component.EsSearchComponent;
 import com.Easylive.component.RedisComponent;
 import com.Easylive.entity.constants.Constants;
 import com.Easylive.entity.dto.TokenUserInfoDto;
@@ -47,6 +48,9 @@ public class VideoController extends ABaseController {
 
     @Resource
     private UserActionService userActionService;
+
+    @Resource
+    private EsSearchComponent esSearchComponent;
 
 
     @RequestMapping("/loadRecommendVideo")
@@ -111,6 +115,21 @@ public class VideoController extends ABaseController {
         return getSuccessResponseVO(count);
     }
 
+
+    @RequestMapping("/search")
+    public ResponseVO search(@NotEmpty String keyword, Integer orderType, Integer pageNo) {
+        //TODO 记录搜索热词
+
+        PaginationResultVO resultVO = esSearchComponent.search(true, keyword, orderType, pageNo, PageSize.SIZE30.getSize());
+        return getSuccessResponseVO(resultVO);
+    }
+
+    @RequestMapping("/getVideoRecommend")
+    public ResponseVO getVideoRecommend(@NotEmpty String keyword, @NotEmpty String videoId) {
+        List<VideoInfo> videoInfoList = esSearchComponent.search(false, keyword, SearchOrderTypeEnum.VIDEO_PLAY.getType(), 1, PageSize.SIZE10.getSize()).getList();
+        videoInfoList = videoInfoList.stream().filter(item -> !item.getVideoId().equals(videoId)).collect(Collectors.toList());
+        return getSuccessResponseVO(videoInfoList);
+    }
 
 
 
