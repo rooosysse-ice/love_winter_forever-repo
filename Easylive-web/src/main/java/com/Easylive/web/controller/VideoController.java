@@ -118,8 +118,7 @@ public class VideoController extends ABaseController {
 
     @RequestMapping("/search")
     public ResponseVO search(@NotEmpty String keyword, Integer orderType, Integer pageNo) {
-        //TODO 记录搜索热词
-
+        redisComponent.addKeywordCount(keyword);
         PaginationResultVO resultVO = esSearchComponent.search(true, keyword, orderType, pageNo, PageSize.SIZE30.getSize());
         return getSuccessResponseVO(resultVO);
     }
@@ -131,6 +130,21 @@ public class VideoController extends ABaseController {
         return getSuccessResponseVO(videoInfoList);
     }
 
+    @RequestMapping("/getSearchKeywordTop")
+    public ResponseVO getSearchKeywordTop() {
+        List<String> keywordList = redisComponent.getKeywordTop(Constants.LENGTH_10);
+        return getSuccessResponseVO(keywordList);
+    }
 
+    @RequestMapping("/loadHotVideoList")
+    public ResponseVO loadHotVideoList(Integer pageNo) {
+        VideoInfoQuery videoInfoQuery = new VideoInfoQuery();
+        videoInfoQuery.setPageNo(pageNo);
+        videoInfoQuery.setQueryUserInfo(true);
+        videoInfoQuery.setOrderBy("play_count desc");
+        videoInfoQuery.setLastPlayHour(Constants.HOUR_24);
+        PaginationResultVO resultVO = videoInfoService.findListByPage(videoInfoQuery);
+        return getSuccessResponseVO(resultVO);
+    }
 
 }

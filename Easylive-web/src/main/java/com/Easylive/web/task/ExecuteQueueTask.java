@@ -1,8 +1,11 @@
 package com.Easylive.web.task;
 
 
+import com.Easylive.component.EsSearchComponent;
 import com.Easylive.component.RedisComponent;
 import com.Easylive.entity.constants.Constants;
+import com.Easylive.entity.dto.VideoPlayInfoDto;
+import com.Easylive.entity.enums.SearchOrderTypeEnum;
 import com.Easylive.entity.po.VideoInfoFilePost;
 import com.Easylive.redis.RedisUtils;
 import com.Easylive.service.VideoInfoPostService;
@@ -35,6 +38,9 @@ public class ExecuteQueueTask {
     @Resource
     private RedisComponent redisComponent;
 
+    @Resource
+    private EsSearchComponent esSearchComponent;
+
     @PostConstruct
     public void consumeTransferFileQueue() {
         executorService.execute(() -> {
@@ -53,6 +59,33 @@ public class ExecuteQueueTask {
         });
     }
 
+    @PostConstruct
+    public void consumeVideoPlayQueue() {
+        executorService.execute(() -> {
+            while (true) {
+                try {
+                    VideoPlayInfoDto videoPlayInfoDto = (VideoPlayInfoDto) redisUtils.rpop(Constants.REDIS_KEY_QUEUE_VIDEO_PLAY);
+                    if (videoPlayInfoDto == null) {
+                        Thread.sleep(1500);
+                        continue;
+                    }
+                    //更新播放数
+                    videoInfoService.addReadCount(videoPlayInfoDto.getVideoId());
+                    if (!StringTools.isEmpty(videoPlayInfoDto.getUserId())) {
+                        //TODO 记录历史
 
+                    }
+                    //按天记录播放数
+                    redisComponent.recordVideoPlayCount(videoPlayInfoDto.getVideoId());
+
+                    //更新es播放数量
+                    esSearchComponent.updateDocCount(videoPlayInfoDto.getVideoId(), SearchOrderTypeEnum.VIDEO_PLAY.getField(), 1);
+
+                } catch (Exception e) {
+                    log.error("获取视频播放文件队列信息失败", e);
+                }
+            }
+        });
+    }
 
 }

@@ -1,10 +1,12 @@
 package com.Easylive.service.impl;
 
+import com.Easylive.component.EsSearchComponent;
 import com.Easylive.component.RedisComponent;
 import com.Easylive.entity.config.AppConfig;
 import com.Easylive.entity.dto.SysSettingDto;
 import com.Easylive.entity.enums.PageSize;
 import com.Easylive.entity.enums.ResponseCodeEnum;
+import com.Easylive.entity.enums.UserActionTypeEnum;
 import com.Easylive.entity.po.*;
 import com.Easylive.entity.query.*;
 import com.Easylive.entity.vo.PaginationResultVO;
@@ -15,6 +17,7 @@ import com.Easylive.service.VideoInfoService;
 import com.Easylive.utils.StringTools;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,6 +64,8 @@ public class VideoInfoServiceImpl implements VideoInfoService {
 
     @Resource
     private RedisComponent redisComponent;
+    @Autowired
+    private EsSearchComponent esSearchComponent;
 
     /**
      * 根据条件查询列表
@@ -198,8 +203,7 @@ public class VideoInfoServiceImpl implements VideoInfoService {
 
         //TODO 减去用户硬币
 
-        //TODO 删除es信息
-
+        esSearchComponent.delDoc(videoId);
         executorService.execute(() -> {
 
             VideoInfoFileQuery videoInfoFileQuery = new VideoInfoFileQuery();
@@ -234,4 +238,11 @@ public class VideoInfoServiceImpl implements VideoInfoService {
             }
         });
     }
+
+    @Override
+    public void addReadCount(String videoId) {
+        this.videoInfoMapper.updateCountInfo(videoId, UserActionTypeEnum.VIDEO_PLAY.getField(),1);
+    }
+
+
 }

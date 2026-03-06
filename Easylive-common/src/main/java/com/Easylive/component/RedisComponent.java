@@ -5,6 +5,7 @@ import com.Easylive.entity.constants.Constants;
 import com.Easylive.entity.dto.SysSettingDto;
 import com.Easylive.entity.dto.TokenUserInfoDto;
 import com.Easylive.entity.dto.UploadingFileDto;
+import com.Easylive.entity.dto.VideoPlayInfoDto;
 import com.Easylive.entity.enums.DateTimePatternEnum;
 import com.Easylive.entity.po.CategoryInfo;
 import com.Easylive.entity.po.VideoInfoFilePost;
@@ -166,6 +167,25 @@ public class RedisComponent {
 
     public void addFile2TransferQueue(List<VideoInfoFilePost> fileList) {
         redisUtils.lpushAll(Constants.REDIS_KEY_QUEUE_TRANSFER, fileList, 0);
+    }
+
+    public void recordVideoPlayCount(String videoId) {
+        String date = DateUtil.format(new Date(), DateTimePatternEnum.YYYY_MM_DD.getPattern());
+        redisUtils.incrementex(Constants.REDIS_KEY_VIDEO_PLAY_COUNT + date + ":" + videoId, Constants.REDIS_KEY_EXPIRES_DAY * 2L);
+    }
+
+
+    // 添加搜索关键词
+    public void addKeywordCount(String keyword) {
+        redisUtils.zaddCount(Constants.REDIS_KEY_VIDEO_SEARCH_COUNT, keyword);
+    }
+
+    public List<String> getKeywordTop(Integer top) {
+        return redisUtils.getZSetList(Constants.REDIS_KEY_VIDEO_SEARCH_COUNT, top - 1);
+    }
+
+    public void addVideoPlay(VideoPlayInfoDto videoPlayInfoDto) {
+        redisUtils.lpush(Constants.REDIS_KEY_QUEUE_VIDEO_PLAY, videoPlayInfoDto, null);
     }
 
 
