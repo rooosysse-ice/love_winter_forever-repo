@@ -16,6 +16,7 @@ import com.Easylive.service.VideoInfoFileService;
 import com.Easylive.utils.DateUtil;
 import com.Easylive.utils.FFmpegUtils;
 import com.Easylive.utils.StringTools;
+import com.Easylive.web.annotation.GlobalInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.validation.annotation.Validated;
@@ -81,6 +82,7 @@ public class FileController extends ABaseController {
     }
 
     @RequestMapping("/preUploadVideo")
+    @GlobalInterceptor(checkLogin = true)
     public ResponseVO preUploadVideo(@NotEmpty String fileName, @NotNull Integer chunks) {
         TokenUserInfoDto tokenUserInfoDto = getTokenUserInfoDto();
         String uploadId = redisComponent.savePreVideoFileInfo(tokenUserInfoDto.getUserId(), fileName, chunks);
@@ -88,6 +90,7 @@ public class FileController extends ABaseController {
     }
 
     @RequestMapping("/uploadVideo")
+    @GlobalInterceptor(checkLogin = true)
     public ResponseVO uploadVideo(@NotNull MultipartFile chunkFile, @NotNull Integer chunkIndex, @NotEmpty String uploadId) throws IOException {
         TokenUserInfoDto tokenUserInfoDto = getTokenUserInfoDto();
         UploadingFileDto fileDto = redisComponent.getUploadingVideoFile(tokenUserInfoDto.getUserId(), uploadId);
@@ -113,6 +116,7 @@ public class FileController extends ABaseController {
     }
 
     @RequestMapping("/delUploadVideo")
+    @GlobalInterceptor(checkLogin = true)
     public ResponseVO delUploadVideo(@NotEmpty String uploadId) throws IOException {
         TokenUserInfoDto tokenUserInfoDto = getTokenUserInfoDto();
         UploadingFileDto fileDto = redisComponent.getUploadingVideoFile(tokenUserInfoDto.getUserId(), uploadId);
@@ -127,6 +131,7 @@ public class FileController extends ABaseController {
 
 
     @RequestMapping("/uploadImage")
+    @GlobalInterceptor(checkLogin = true)
     public ResponseVO uploadCover(@NotNull MultipartFile file, @NotNull Boolean createThumbnail) throws IOException {
         String day = DateUtil.format(new Date(), DateTimePatternEnum.YYYYMMDD.getPattern());
         String folder = appConfig.getProjectFolder() + Constants.FILE_FOLDER + Constants.FILE_COVER + day;

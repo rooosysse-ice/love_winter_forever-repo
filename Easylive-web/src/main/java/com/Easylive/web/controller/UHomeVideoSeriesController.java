@@ -14,6 +14,7 @@ import com.Easylive.exception.BusinessException;
 import com.Easylive.service.UserVideoSeriesService;
 import com.Easylive.service.UserVideoSeriesVideoService;
 import com.Easylive.service.VideoInfoService;
+import com.Easylive.web.annotation.GlobalInterceptor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -46,6 +47,7 @@ public class UHomeVideoSeriesController extends ABaseController {
     }
 
     @RequestMapping("/saveVideoSeries")
+    @GlobalInterceptor(checkLogin = true)
     public ResponseVO saveVideoSeries(Integer seriesId,
                                       @NotEmpty @Size(max = 100) String seriesName,
                                       @Size(max = 200) String seriesDescription,
@@ -61,6 +63,7 @@ public class UHomeVideoSeriesController extends ABaseController {
     }
 
     @RequestMapping("/loadAllVideo")
+    @GlobalInterceptor(checkLogin = true)
     public ResponseVO loadAllVideo(Integer seriesId) {
         TokenUserInfoDto tokenUserInfoDto = getTokenUserInfoDto();
         VideoInfoQuery infoQuery = new VideoInfoQuery();
@@ -93,6 +96,7 @@ public class UHomeVideoSeriesController extends ABaseController {
     }
 
     @RequestMapping("/saveSeriesVideo")
+    @GlobalInterceptor(checkLogin = true)
     public ResponseVO saveSeriesVideo(@NotNull Integer seriesId, @NotEmpty String videoIds) {
         TokenUserInfoDto tokenUserInfoDto = getTokenUserInfoDto();
         userVideoSeriesService.saveSeriesVideo(tokenUserInfoDto.getUserId(), seriesId, videoIds);
@@ -101,6 +105,7 @@ public class UHomeVideoSeriesController extends ABaseController {
 
     // 删除集合中的视频
     @RequestMapping("/delSeriesVideo")
+
     public ResponseVO delSeriesVideo(@NotNull Integer seriesId, @NotEmpty String videoId) {
         TokenUserInfoDto tokenUserInfoDto = getTokenUserInfoDto();
         userVideoSeriesService.delSeriesVideo(tokenUserInfoDto.getUserId(), seriesId, videoId);
@@ -109,6 +114,7 @@ public class UHomeVideoSeriesController extends ABaseController {
 
     //删除系列
     @RequestMapping("/delVideoSeries")
+
     public ResponseVO delVideoSeries(@NotNull Integer seriesId) {
         TokenUserInfoDto tokenUserInfoDto = getTokenUserInfoDto();
         userVideoSeriesService.delVideoSeries(tokenUserInfoDto.getUserId(), seriesId);
@@ -116,6 +122,7 @@ public class UHomeVideoSeriesController extends ABaseController {
     }
 
     @RequestMapping("/changeVideoSeriesSort")
+    @GlobalInterceptor(checkLogin = true)
     public ResponseVO changeVideoSeriesSort(@NotEmpty String seriesIds) {
         TokenUserInfoDto tokenUserInfoDto = getTokenUserInfoDto();
         userVideoSeriesService.changeVideoSeriesSort(tokenUserInfoDto.getUserId(), seriesIds);

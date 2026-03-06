@@ -7,6 +7,7 @@ import com.Easylive.entity.query.VideoDanmuQuery;
 import com.Easylive.entity.vo.ResponseVO;
 import com.Easylive.service.VideoDanmuService;
 import com.Easylive.service.impl.VideoInfoServiceImpl;
+import com.Easylive.web.annotation.GlobalInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,6 +33,7 @@ public class VideoDanmuController extends ABaseController {
     private VideoInfoServiceImpl videoInfoService;
 
     @RequestMapping("/postDanmu")
+    @GlobalInterceptor(checkLogin = true)
     public ResponseVO postDanmu(@NotEmpty String videoId,
                                 @NotEmpty String fileId,
                                 @NotEmpty @Size(max = 200) String text,
