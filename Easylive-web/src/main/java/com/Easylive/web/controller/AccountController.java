@@ -4,11 +4,13 @@ import com.Easylive.component.RedisComponent;
 import com.Easylive.entity.constants.Constants;
 import com.Easylive.entity.dto.TokenUserInfoDto;
 //import com.Easylive.entity.dto.UserCountInfoDto;
+import com.Easylive.entity.dto.UserCountInfoDto;
 import com.Easylive.entity.vo.ResponseVO;
 import com.Easylive.exception.BusinessException;
 import com.Easylive.service.UserInfoService;
 //import com.Easylive.web.annotation.GlobalInterceptor;
 import com.Easylive.utils.StringTools;
+import com.Easylive.web.annotation.GlobalInterceptor;
 import com.wf.captcha.ArithmeticCaptcha;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -116,6 +118,14 @@ public class AccountController extends ABaseController {
     public ResponseVO logout(HttpServletResponse response) {
         cleanCookie(response);
         return getSuccessResponseVO(null);
+    }
+
+    @RequestMapping(value = "/getUserCountInfo")
+    @GlobalInterceptor(checkLogin = true)
+    public ResponseVO getUserCountInfo() {
+        TokenUserInfoDto tokenUserInfoDto = getTokenUserInfoDto();
+        UserCountInfoDto userCountInfoDto = userInfoService.getUserCountInfo(tokenUserInfoDto.getUserId());
+        return getSuccessResponseVO(userCountInfoDto);
     }
 
 }

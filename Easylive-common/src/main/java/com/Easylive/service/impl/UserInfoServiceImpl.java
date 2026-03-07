@@ -4,6 +4,7 @@ import com.Easylive.component.RedisComponent;
 import com.Easylive.entity.constants.Constants;
 import com.Easylive.entity.dto.CountInfoDto;
 import com.Easylive.entity.dto.TokenUserInfoDto;
+import com.Easylive.entity.dto.UserCountInfoDto;
 import com.Easylive.entity.enums.PageSize;
 import com.Easylive.entity.enums.ResponseCodeEnum;
 import com.Easylive.entity.enums.UserSexEnum;
@@ -303,5 +304,17 @@ public class UserInfoServiceImpl implements UserInfoService {
         return userInfo;
     }
 
+    @Override
+    public UserCountInfoDto getUserCountInfo(String userId) {
+        UserInfo userInfo = getUserInfoByUserId(userId);
+        Integer fansCount = userFocusMapper.selectFansCount(userId);
+        Integer focusCount = userFocusMapper.selectFocusCount(userId);
 
+        UserCountInfoDto countInfoDto = new UserCountInfoDto();
+
+        countInfoDto.setFansCount(fansCount);
+        countInfoDto.setFocusCount(focusCount);
+        countInfoDto.setCurrentCoinCount(userInfo.getCurrentCoinCount());
+        return countInfoDto;
+    }
 }
