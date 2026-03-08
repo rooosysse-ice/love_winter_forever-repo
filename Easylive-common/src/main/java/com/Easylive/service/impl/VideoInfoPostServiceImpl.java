@@ -383,7 +383,7 @@ public class VideoInfoPostServiceImpl implements VideoInfoPostService {
         VideoInfo dbVideoInfo = this.videoInfoMapper.selectByVideoId(videoId);
         if (dbVideoInfo == null) {
             SysSettingDto sysSettingDto = redisComponent.getSysSettingDto();
-            // TODO：增加用户硬币
+            userInfoMapper.updateCoinCountInfo(infoPost.getUserId(), sysSettingDto.getRegisterCoinCount());
         }
 
         /**

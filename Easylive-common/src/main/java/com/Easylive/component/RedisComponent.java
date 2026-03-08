@@ -188,6 +188,11 @@ public class RedisComponent {
         redisUtils.lpush(Constants.REDIS_KEY_QUEUE_VIDEO_PLAY, videoPlayInfoDto, null);
     }
 
+    public Map<String, Integer> getVideoPlayCount(String date) {
+        Map<String, Integer> videoPlayMap = redisUtils.getBatch(Constants.REDIS_KEY_VIDEO_PLAY_COUNT + date);
+        return videoPlayMap;
+    }
+
 
 
 }

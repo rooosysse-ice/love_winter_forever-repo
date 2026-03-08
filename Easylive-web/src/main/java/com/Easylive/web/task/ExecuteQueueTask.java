@@ -7,9 +7,11 @@ import com.Easylive.entity.constants.Constants;
 import com.Easylive.entity.dto.VideoPlayInfoDto;
 import com.Easylive.entity.enums.SearchOrderTypeEnum;
 import com.Easylive.entity.po.VideoInfoFilePost;
+import com.Easylive.entity.po.VideoPlayHistory;
 import com.Easylive.redis.RedisUtils;
 import com.Easylive.service.VideoInfoPostService;
 import com.Easylive.service.VideoInfoService;
+import com.Easylive.service.VideoPlayHistoryService;
 import com.Easylive.utils.StringTools;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -40,6 +42,9 @@ public class ExecuteQueueTask {
 
     @Resource
     private EsSearchComponent esSearchComponent;
+
+    @Resource
+    private VideoPlayHistoryService videoPlayHistoryService;
 
     @PostConstruct
     public void consumeTransferFileQueue() {
@@ -72,8 +77,8 @@ public class ExecuteQueueTask {
                     //更新播放数
                     videoInfoService.addReadCount(videoPlayInfoDto.getVideoId());
                     if (!StringTools.isEmpty(videoPlayInfoDto.getUserId())) {
-                        //TODO 记录历史
-
+                        //记录历史
+                        videoPlayHistoryService.saveHistory(videoPlayInfoDto.getUserId(), videoPlayInfoDto.getVideoId(), videoPlayInfoDto.getFileIndex());
                     }
                     //按天记录播放数
                     redisComponent.recordVideoPlayCount(videoPlayInfoDto.getVideoId());

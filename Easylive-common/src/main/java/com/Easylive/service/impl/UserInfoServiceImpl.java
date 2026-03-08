@@ -3,6 +3,7 @@ package com.Easylive.service.impl;
 import com.Easylive.component.RedisComponent;
 import com.Easylive.entity.constants.Constants;
 import com.Easylive.entity.dto.CountInfoDto;
+import com.Easylive.entity.dto.SysSettingDto;
 import com.Easylive.entity.dto.TokenUserInfoDto;
 import com.Easylive.entity.dto.UserCountInfoDto;
 import com.Easylive.entity.enums.PageSize;
@@ -225,9 +226,11 @@ public class UserInfoServiceImpl implements UserInfoService {
         userInfo.setStatus(UserStatusEnum.ENABLE.getStatus());
         userInfo.setSex(UserSexEnum.SECRECY.getType());
         userInfo.setTheme(Constants.ONE);
-        // 简单设定初始硬币数量
-        userInfo.setCurrentCoinCount(10);
-        userInfo.setTotalCoinCount(20);
+        // 初始化硬币数量
+
+        SysSettingDto sysSettingDto = redisComponent.getSysSettingDto();
+        userInfo.setCurrentCoinCount(sysSettingDto.getRegisterCoinCount());
+        userInfo.setTotalCoinCount(sysSettingDto.getRegisterCoinCount());
 
         this.userInfoMapper.insert(userInfo);
     }

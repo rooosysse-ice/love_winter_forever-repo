@@ -64,8 +64,12 @@ public class VideoInfoServiceImpl implements VideoInfoService {
 
     @Resource
     private RedisComponent redisComponent;
-    @Autowired
+
+    @Resource
     private EsSearchComponent esSearchComponent;
+
+    @Resource
+    private UserInfoMapper<UserInfo,UserInfoQuery> userInfoMapper;
 
     /**
      * 根据条件查询列表
@@ -201,7 +205,8 @@ public class VideoInfoServiceImpl implements VideoInfoService {
 
         this.videoInfoPostMapper.deleteByVideoId(videoId);
 
-        //TODO 减去用户硬币
+        SysSettingDto sysSettingDto = redisComponent.getSysSettingDto();
+        userInfoMapper.updateCoinCountInfo(videoInfoPost.getUserId(), -sysSettingDto.getRegisterCoinCount());
 
         esSearchComponent.delDoc(videoId);
         executorService.execute(() -> {
