@@ -193,6 +193,7 @@ public class RedisComponent {
         return videoPlayMap;
     }
 
-
-
+    public void saveSettingDto(SysSettingDto sysSettingDto) {
+        redisUtils.set(Constants.REDIS_KEY_SYS_SETTING, sysSettingDto);
+    }
 }
