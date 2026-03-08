@@ -432,6 +432,23 @@ public class VideoInfoPostServiceImpl implements VideoInfoPostService {
 
     }
 
+    @Override
+    public void recommendVideo(String videoId) {
+        VideoInfo videoInfo = videoInfoMapper.selectByVideoId(videoId);
+        if (videoInfo == null) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        Integer recommendType = null;
+        if (VideoRecommendTypeEnum.RECOMMEND.getType().equals(videoInfo.getRecommendType())) {
+            recommendType = VideoRecommendTypeEnum.NO_RECOMMEND.getType();
+        } else {
+            recommendType = VideoRecommendTypeEnum.RECOMMEND.getType();
+        }
+        VideoInfo updateInfo = new VideoInfo();
+        updateInfo.setRecommendType(recommendType);
+        videoInfoMapper.updateByVideoId(updateInfo, videoId);
+    }
+
     private boolean changeVideoInfo(VideoInfoPost videoInfoPost) {
         VideoInfoPost dbInfo = this.videoInfoPostMapper.selectByVideoId(videoInfoPost.getVideoId());
         //标题，封面，标签，简介

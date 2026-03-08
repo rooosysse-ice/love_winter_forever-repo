@@ -48,4 +48,24 @@ public class VideoInfoController extends ABaseController {
         return getSuccessResponseVO(null);
     }
 
+    @RequestMapping("/deleteVideo")
+    public ResponseVO deleteVideo(@NotEmpty String videoId) {
+        videoInfoService.deleteVideo(videoId, null);
+        return getSuccessResponseVO(null);
+    }
+
+    @RequestMapping("/recommendVideo")
+    public ResponseVO recommendVideo(@NotEmpty String videoId) {
+        videoInfoPostService.recommendVideo(videoId);
+        return getSuccessResponseVO(null);
+    }
+
+    @RequestMapping("/loadVideoPList")
+    public ResponseVO loadVideoPList(@NotEmpty String videoId) {
+        VideoInfoFilePostQuery postQuery = new VideoInfoFilePostQuery();
+        postQuery.setOrderBy("file_index asc");
+        postQuery.setVideoId(videoId);
+        List<VideoInfoFilePost> videoInfoFilePostsList = videoInfoFilePostService.findListByParam(postQuery);
+        return getSuccessResponseVO(videoInfoFilePostsList);
+    }
 }
