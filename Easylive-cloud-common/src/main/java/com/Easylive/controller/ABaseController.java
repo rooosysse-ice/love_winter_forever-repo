@@ -2,6 +2,7 @@ package com.Easylive.controller;
 
 import com.Easylive.component.RedisComponent;
 import com.Easylive.entity.constants.Constants;
+import com.Easylive.entity.dto.TokenUserInfoDto;
 import com.Easylive.entity.enums.ResponseCodeEnum;
 import com.Easylive.entity.vo.ResponseVO;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -38,6 +39,12 @@ public class ABaseController {
         cookie.setMaxAge(Constants.TIME_SECONDS_DAY * 7);
         cookie.setPath("/");
         response.addCookie(cookie);
+    }
+
+    public TokenUserInfoDto getTokenUserInfoDto() {
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        String token = request.getHeader(Constants.TOKEN_WEB);
+        return redisComponent.getTokenInfo(token);
     }
 
     public void cleanCookie(HttpServletResponse response) {
