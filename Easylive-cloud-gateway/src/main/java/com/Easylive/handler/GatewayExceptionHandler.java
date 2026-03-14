@@ -29,9 +29,8 @@ public class GatewayExceptionHandler implements WebExceptionHandler {
 
     @Override
     public Mono<Void> handle(ServerWebExchange exchange, Throwable throwable) {
-
-        ResponseVO responseVO = new ResponseVO<>();
-
+        log.error("网关请求错误url:{},错误信息", exchange.getRequest().getPath(), throwable);
+        ResponseVO responseVO = getResponse(exchange, throwable);
         ServerHttpResponse response = exchange.getResponse();
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
         DataBuffer dataBuffer = response.bufferFactory().wrap(JsonUtils.convertObj2Json(responseVO).getBytes(StandardCharsets.UTF_8));
@@ -51,6 +50,7 @@ public class GatewayExceptionHandler implements WebExceptionHandler {
             } else if (HttpStatus.SERVICE_UNAVAILABLE == responseStatusException.getStatus()) {
                 responseVO.setCode(ResponseCodeEnum.CODE_503.getCode());
                 responseVO.setInfo(ResponseCodeEnum.CODE_503.getMsg());
+                return responseVO;
             }else {
                 responseVO.setCode(responseStatusException.getStatus().value());
                 responseVO.setInfo(ResponseCodeEnum.CODE_500.getMsg());
@@ -60,6 +60,7 @@ public class GatewayExceptionHandler implements WebExceptionHandler {
             BusinessException exception = (BusinessException) throwable;
             responseVO.setCode(exception.getCode());
             responseVO.setInfo(exception.getMessage());
+            return responseVO;
         }
 
         responseVO.setCode(ResponseCodeEnum.CODE_500.getCode());

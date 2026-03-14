@@ -10,7 +10,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 @RestController
-@RequestMapping(Constants.INNER_API_PREFIX)
+@RequestMapping(Constants.INNER_API_PREFIX + "/category")
 public class CategoryApi {
 
     @Resource

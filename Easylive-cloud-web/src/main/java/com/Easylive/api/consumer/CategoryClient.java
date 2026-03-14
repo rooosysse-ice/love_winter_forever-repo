@@ -9,6 +9,6 @@ import java.util.List;
 
 @FeignClient(name = Constants.SERVER_NAME_ADMIN)
 public interface CategoryClient {
-    @RequestMapping(Constants.INNER_API_PREFIX +"/loadAllCategory")
+    @RequestMapping(Constants.INNER_API_PREFIX +"/category/loadAllCategory")
     List<CategoryInfo> loadAllCategory();
 }
