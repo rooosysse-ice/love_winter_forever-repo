@@ -28,3 +28,10 @@ spring:
           filters:
             - StripPrefix=1
             - AdminFilter
+
+        - id: resource
+          uri: lb://Easylive-cloud-resource
+          predicates:
+            - Path=/file/**
+          filters:
+            - StripPrefix=1

@@ -8,7 +8,7 @@ import com.Easylive.entity.vo.ResponseVO;
 import com.Easylive.exception.BusinessException;
 import com.Easylive.service.UserInfoService;
 import com.Easylive.utils.StringTools;
-//import com.Easylive.web.annotation.GlobalInterceptor;
+import com.Easylive.annotation.GlobalInterceptor;
 import com.wf.captcha.ArithmeticCaptcha;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -119,7 +119,7 @@ public class AccountController extends ABaseController {
     }
 
     @RequestMapping(value = "/getUserCountInfo")
-//    @GlobalInterceptor(checkLogin = true)
+    @GlobalInterceptor(checkLogin = true)
     public ResponseVO getUserCountInfo() {
         TokenUserInfoDto tokenUserInfoDto = getTokenUserInfoDto();
         UserCountInfoDto userCountInfoDto = userInfoService.getUserCountInfo(tokenUserInfoDto.getUserId());
