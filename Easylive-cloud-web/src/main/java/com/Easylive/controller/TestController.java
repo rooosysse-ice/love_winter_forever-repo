@@ -1,5 +1,6 @@
 package com.Easylive.controller;
 
+import com.Easylive.api.consumer.CategoryClient;
 import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,10 +12,7 @@ import javax.annotation.Resource;
 public class TestController {
 
     @Resource
-    private ServletWebServerApplicationContext applicationContext;
+    private CategoryClient categoryClient;
 
-        @RequestMapping("/test")
-        public String test() {
-            return "这是一个微服务web模块" + applicationContext.getWebServer().getPort() ;
-        }
+
 }

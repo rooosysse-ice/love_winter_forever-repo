@@ -54,6 +54,7 @@ public class GatewayExceptionHandler implements WebExceptionHandler {
             }else {
                 responseVO.setCode(responseStatusException.getStatus().value());
                 responseVO.setInfo(ResponseCodeEnum.CODE_500.getMsg());
+                return responseVO;
             }
         }else if(throwable instanceof BusinessException){
             BusinessException exception = (BusinessException) throwable;
