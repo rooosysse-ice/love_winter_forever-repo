@@ -35,3 +35,10 @@ spring:
             - Path=/file/**
           filters:
             - StripPrefix=1
+
+        - id: interact
+          uri: lb://Easylive-cloud-interact
+          predicates:
+            - Path=/interact/**
+          filters:
+            - StripPrefix=1

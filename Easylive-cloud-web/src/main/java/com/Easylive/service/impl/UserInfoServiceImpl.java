@@ -320,4 +320,9 @@ public class UserInfoServiceImpl implements UserInfoService {
         countInfoDto.setCurrentCoinCount(userInfo.getCurrentCoinCount());
         return countInfoDto;
     }
+
+    @Override
+    public Integer updateCoinCountInfo(String userId, Integer changeCount) {
+        return this.userInfoMapper.updateCoinCountInfo(userId, changeCount);
+    }
 }

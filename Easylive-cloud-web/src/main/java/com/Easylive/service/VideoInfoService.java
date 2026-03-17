@@ -75,6 +75,8 @@ public interface VideoInfoService {
 
     void addReadCount(String videoId);
 
+    void updateCountInfo(String videoId, String fileId, Integer changeCount);
+
 
 
 

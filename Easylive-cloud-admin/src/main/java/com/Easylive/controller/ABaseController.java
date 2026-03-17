@@ -2,7 +2,6 @@ package com.Easylive.controller;
 
 import com.Easylive.component.RedisComponent;
 import com.Easylive.entity.constants.Constants;
-import com.Easylive.entity.dto.TokenUserInfoDto;
 import com.Easylive.entity.enums.ResponseCodeEnum;
 import com.Easylive.entity.vo.ResponseVO;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -34,41 +33,12 @@ public class ABaseController {
 
 
     public void saveToken2Cookie(HttpServletResponse response, String token) {
-        Cookie cookie = new Cookie(Constants.TOKEN_WEB, token);
+        Cookie cookie = new Cookie(Constants.TOKEN_ADMIN, token);
         //-1会话级别 单位秒
         cookie.setMaxAge(Constants.TIME_SECONDS_DAY * 7);
         cookie.setPath("/");
         response.addCookie(cookie);
     }
-
-    public TokenUserInfoDto getTokenUserInfoDto() {
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-        String token = request.getHeader(Constants.TOKEN_WEB);
-        return redisComponent.getTokenInfo(token);
-    }
-
-    public TokenUserInfoDto getTokenInfoFromCookie() {
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-        String token = getTokenFromCookie(request);
-        if (token == null) {
-            return null;
-        }
-        return redisComponent.getTokenInfo(token);
-    }
-
-    private String getTokenFromCookie(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return null;
-        }
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equalsIgnoreCase(Constants.TOKEN_WEB)) {
-                return cookie.getValue();
-            }
-        }
-        return null;
-    }
-
 
     public void cleanCookie(HttpServletResponse response) {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
@@ -77,7 +47,7 @@ public class ABaseController {
             return;
         }
         for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(Constants.TOKEN_WEB)) {
+            if (cookie.getName().equals(Constants.TOKEN_ADMIN)) {
                 redisComponent.cleanToken(cookie.getValue());
                 cookie.setMaxAge(0);
                 cookie.setPath("/");

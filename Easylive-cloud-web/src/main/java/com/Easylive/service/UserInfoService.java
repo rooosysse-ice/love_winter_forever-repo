@@ -118,4 +118,6 @@ public interface UserInfoService {
 
     UserCountInfoDto getUserCountInfo(String userId);
 
+    Integer updateCoinCountInfo(String userId, Integer changeCount);
+
 }
