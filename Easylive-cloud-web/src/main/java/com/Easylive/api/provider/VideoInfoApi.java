@@ -1,13 +1,21 @@
 package com.Easylive.api.provider;
 
+import com.Easylive.annotation.RecordUserMessage;
 import com.Easylive.component.EsSearchComponent;
 import com.Easylive.component.RedisComponent;
 import com.Easylive.entity.constants.Constants;
+import com.Easylive.entity.enums.MessageTypeEnum;
 import com.Easylive.entity.enums.SearchOrderTypeEnum;
 import com.Easylive.entity.po.VideoInfo;
 import com.Easylive.entity.po.VideoInfoFile;
+import com.Easylive.entity.po.VideoInfoFilePost;
 import com.Easylive.entity.po.VideoInfoPost;
+import com.Easylive.entity.query.VideoInfoFilePostQuery;
+import com.Easylive.entity.query.VideoInfoPostQuery;
+import com.Easylive.entity.vo.PaginationResultVO;
+import com.Easylive.entity.vo.ResponseVO;
 import com.Easylive.mappers.VideoInfoPostMapper;
+import com.Easylive.service.VideoInfoFilePostService;
 import com.Easylive.service.VideoInfoFileService;
 import com.Easylive.service.VideoInfoService;
 import com.Easylive.service.impl.VideoInfoPostServiceImpl;
@@ -20,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @RestController
 @RequestMapping(Constants.INNER_API_PREFIX + "/video")
@@ -34,6 +43,9 @@ public class VideoInfoApi {
 
     @Resource
     private VideoInfoPostServiceImpl videoInfoPostService;
+
+    @Resource
+    private VideoInfoFilePostService videoInfoFilePostService;
 
     @Resource
     private EsSearchComponent esSearchComponent;
@@ -61,6 +73,39 @@ public class VideoInfoApi {
     @RequestMapping("/updateDocCount")
     public void updateDocCount(String videoId,SearchOrderTypeEnum searchOrderTypeEnum,Integer changeCOunt) {
         esSearchComponent.updateDocCount(videoId, searchOrderTypeEnum.getField(), changeCOunt);
+    }
+    @RequestMapping("/admin/loadVideoList")
+    public PaginationResultVO loadVideoList(VideoInfoPostQuery videoInfoPostQuery) {
+        videoInfoPostQuery.setOrderBy("last_update_time desc");
+        videoInfoPostQuery.setQueryCountInfo(true);
+        videoInfoPostQuery.setQueryUserInfo(true);
+        PaginationResultVO resultVO = videoInfoPostService.findListByPage(videoInfoPostQuery);
+        return resultVO;
+    }
+
+    @RequestMapping("/admin/auditVideo")
+    @RecordUserMessage(messageType = MessageTypeEnum.SYS)
+    public void auditVideo(@NotEmpty String videoId, @NotNull Integer status, String reason) {
+        videoInfoPostService.auditVideo(videoId, status, reason);
+    }
+
+    @RequestMapping("/admin/deleteVideo")
+    public void deleteVideo(@NotEmpty String videoId) {
+        videoInfoService.deleteVideo(videoId, null);
+    }
+
+    @RequestMapping("/admin/recommendVideo")
+    public void recommendVideo(@NotEmpty String videoId) {
+        videoInfoPostService.recommendVideo(videoId);
+    }
+
+    @RequestMapping("/admin/loadVideoPList")
+    public List<VideoInfoFilePost> loadVideoPList(@NotEmpty String videoId) {
+        VideoInfoFilePostQuery postQuery = new VideoInfoFilePostQuery();
+        postQuery.setOrderBy("file_index asc");
+        postQuery.setVideoId(videoId);
+        List<VideoInfoFilePost> videoInfoFilePostsList = videoInfoFilePostService.findListByParam(postQuery);
+        return videoInfoFilePostsList;
     }
 
 }
