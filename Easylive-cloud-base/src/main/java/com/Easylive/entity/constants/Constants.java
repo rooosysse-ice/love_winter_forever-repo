@@ -105,4 +105,9 @@ public class Constants {
 
     public static final String SERVER_NAME_WEB = "Easylive-cloud-web";
 
+    public static final String SERVER_NAME_RESOURCE = "Easylive-cloud-resource";
+
+    public static final String SERVER_NAME_INTERACT = "Easylive-cloud-interact";
+
+
 }

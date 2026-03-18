@@ -11,7 +11,7 @@ public class AppConfig {
     @Value("${admin.account:admin}")
     private String adminAccount;
 
-    @Value("${admin.password:admin123456}")
+    @Value("${admin.password:admin123}")
     private String adminPassword;
 
     @Value("${showFFmegLog:true}")
