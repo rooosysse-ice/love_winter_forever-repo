@@ -37,8 +37,8 @@ public class UserInfoApi {
 
     @RequestMapping("/loadUser")
     public PaginationResultVO loadUser(@RequestBody UserInfoQuery userInfoQuery) {
-        PaginationResultVO resultVO = userInfoService.findListByPage(userInfoQuery);
-        return resultVO;
+        userInfoQuery.setOrderBy("join_time desc");
+        return userInfoService.findListByPage(userInfoQuery);
     }
 
     @RequestMapping("/changeStatus")

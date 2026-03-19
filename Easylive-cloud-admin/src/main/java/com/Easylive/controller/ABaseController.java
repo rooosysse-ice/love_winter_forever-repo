@@ -4,6 +4,8 @@ import com.Easylive.component.RedisComponent;
 import com.Easylive.entity.constants.Constants;
 import com.Easylive.entity.enums.ResponseCodeEnum;
 import com.Easylive.entity.vo.ResponseVO;
+import feign.Response;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -11,8 +13,11 @@ import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 
+@Slf4j
 public class ABaseController {
 
     @Resource
@@ -54,6 +59,21 @@ public class ABaseController {
                 response.addCookie(cookie);
                 break;
             }
+        }
+    }
+
+    public void convertFileReponse2Stream(HttpServletResponse servletResponse, Response response) {
+        Response.Body body = response.body();
+        try (InputStream fileInputStream = body.asInputStream();
+             OutputStream outStream = servletResponse.getOutputStream()) {
+            byte[] bytes = new byte[1024];
+            int len;
+            while ((len = fileInputStream.read(bytes)) != -1) {
+                outStream.write(bytes, 0, len);
+            }
+            outStream.flush();
+        } catch (Exception e) {
+            log.error("读取文件流失败", e);
         }
     }
 

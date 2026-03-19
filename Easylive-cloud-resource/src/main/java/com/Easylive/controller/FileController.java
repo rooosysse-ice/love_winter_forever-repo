@@ -1,6 +1,7 @@
 package com.Easylive.controller;
 
-import com.Easylive.api.comsumer.VideoClient;
+import com.Easylive.annotation.GlobalInterceptor;
+import com.Easylive.api.consumer.VideoClient;
 import com.Easylive.component.RedisComponent;
 import com.Easylive.entity.config.AppConfig;
 import com.Easylive.entity.constants.Constants;
@@ -9,6 +10,7 @@ import com.Easylive.entity.dto.TokenUserInfoDto;
 import com.Easylive.entity.dto.UploadingFileDto;
 import com.Easylive.entity.dto.VideoPlayInfoDto;
 import com.Easylive.entity.enums.DateTimePatternEnum;
+import com.Easylive.entity.enums.FileTypeEnum;
 import com.Easylive.entity.enums.ResponseCodeEnum;
 import com.Easylive.entity.po.VideoInfoFile;
 import com.Easylive.entity.vo.ResponseVO;
@@ -16,7 +18,6 @@ import com.Easylive.exception.BusinessException;
 import com.Easylive.utils.DateUtil;
 import com.Easylive.utils.FFmpegUtils;
 import com.Easylive.utils.StringTools;
-import com.Easylive.annotation.GlobalInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.validation.annotation.Validated;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotEmpty;
@@ -34,16 +36,19 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Date;
 
+import static javafx.scene.input.DataFormat.IMAGE;
+
+
 @Validated
 @Slf4j
 @RestController
 public class FileController extends ABaseController {
 
     @Resource
-    private AppConfig appConfig;
+    private RedisComponent redisComponent;
 
     @Resource
-    private RedisComponent redisComponent;
+    private AppConfig appConfig;
 
     @Resource
     private FFmpegUtils fFmpegUtils;
@@ -52,13 +57,23 @@ public class FileController extends ABaseController {
     private VideoClient videoClient;
 
     @RequestMapping("/getResource")
+    @GlobalInterceptor
     public void getResource(HttpServletResponse response, @NotEmpty String sourceName) {
         if (!StringTools.pathIsOk(sourceName)) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
         String suffix = StringTools.getFileSuffix(sourceName);
-        response.setContentType("image/" + suffix.replace(".", ""));
-        response.setHeader("Cache-Control", "max-age=2592000");
+        FileTypeEnum fileTypeEnum = FileTypeEnum.getBySuffix(suffix);
+        if (null == fileTypeEnum) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        switch (fileTypeEnum) {
+            case IMAGE:
+                //缓存30天
+                response.setHeader("Cache-Control", "max-age=" + 30 * 24 * 60 * 60);
+                response.setContentType("image/" + suffix.replace(".", ""));
+                break;
+        }
         readFile(response, sourceName);
     }
 
@@ -113,8 +128,8 @@ public class FileController extends ABaseController {
         return getSuccessResponseVO(null);
     }
 
+
     @RequestMapping("/delUploadVideo")
-    @GlobalInterceptor(checkLogin = true)
     public ResponseVO delUploadVideo(@NotEmpty String uploadId) throws IOException {
         TokenUserInfoDto tokenUserInfoDto = getTokenUserInfoDto();
         UploadingFileDto fileDto = redisComponent.getUploadingVideoFile(tokenUserInfoDto.getUserId(), uploadId);
@@ -127,10 +142,18 @@ public class FileController extends ABaseController {
     }
 
 
-
+    /**
+     * @Description: 上传图片
+     * @param: [file]
+     * @return: com.Easylive.entity.vo.ResponseVO
+     */
     @RequestMapping("/uploadImage")
     @GlobalInterceptor(checkLogin = true)
     public ResponseVO uploadCover(@NotNull MultipartFile file, @NotNull Boolean createThumbnail) throws IOException {
+        return getSuccessResponseVO(uploadCoverInner(file, createThumbnail));
+    }
+
+    public String uploadCoverInner(MultipartFile file, Boolean createThumbnail) throws IOException {
         String day = DateUtil.format(new Date(), DateTimePatternEnum.YYYYMMDD.getPattern());
         String folder = appConfig.getProjectFolder() + Constants.FILE_FOLDER + Constants.FILE_COVER + day;
         File folderFile = new File(folder);
@@ -146,16 +169,20 @@ public class FileController extends ABaseController {
             //生成缩略图
             fFmpegUtils.createImageThumbnail(filePath);
         }
-        return getSuccessResponseVO(Constants.FILE_COVER + day + "/" + realFileName);
+        return Constants.FILE_COVER + day + "/" + realFileName;
     }
 
+
     @RequestMapping("/videoResource/{fileId}")
+    @GlobalInterceptor
     public void getVideoResource(HttpServletResponse response, @PathVariable @NotEmpty String fileId) {
         VideoInfoFile videoInfoFile = videoClient.getVideoInfoFileByFileId(fileId);
+        if (videoInfoFile == null) {
+            return;
+        }
         String filePath = videoInfoFile.getFilePath();
         readFile(response, filePath + "/" + Constants.M3U8_NAME);
 
-        //TODO:更新视频的阅读信息
         VideoPlayInfoDto videoPlayInfoDto = new VideoPlayInfoDto();
         videoPlayInfoDto.setVideoId(videoInfoFile.getVideoId());
         videoPlayInfoDto.setFileIndex(videoInfoFile.getFileIndex());
@@ -168,10 +195,10 @@ public class FileController extends ABaseController {
     }
 
     @RequestMapping("/videoResource/{fileId}/{ts}")
+    @GlobalInterceptor
     public void getVideoResourceTs(HttpServletResponse response, @PathVariable @NotEmpty String fileId, @PathVariable @NotNull String ts) {
         VideoInfoFile videoInfoFile = videoClient.getVideoInfoFileByFileId(fileId);
-        String filePath = videoInfoFile.getFilePath();
+        String filePath = videoInfoFile.getFilePath() + "";
         readFile(response, filePath + "/" + ts);
     }
-
 }

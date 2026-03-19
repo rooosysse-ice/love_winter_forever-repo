@@ -1,4 +1,4 @@
-package com.Easylive.api.comsumer;
+package com.Easylive.api.consumer;
 
 import com.Easylive.entity.constants.Constants;
 import com.Easylive.entity.po.VideoInfoFile;
