@@ -19,6 +19,7 @@ import com.Easylive.service.VideoInfoPostService;
 import com.Easylive.utils.CopyTools;
 import com.Easylive.utils.FFmpegUtils;
 import com.Easylive.utils.StringTools;
+import io.seata.spring.annotation.GlobalTransactional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -177,7 +178,7 @@ public class VideoInfoPostServiceImpl implements VideoInfoPostService {
 
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @GlobalTransactional(rollbackFor =  Exception.class)
     public void saveVideoInfo(VideoInfoPost videoInfoPost, List<VideoInfoFilePost> uploadFileList) {
         if (uploadFileList.size() > redisComponent.getSysSettingDto().getVideoPCount()) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
@@ -273,81 +274,7 @@ public class VideoInfoPostServiceImpl implements VideoInfoPostService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void transferVideoFile(VideoInfoFilePost videoInfoFile) {
-        VideoInfoFilePost updateFilePost = new VideoInfoFilePost();
-        try {
-            UploadingFileDto fileDto = redisComponent.getUploadingVideoFile(videoInfoFile.getUserId(), videoInfoFile.getUploadId());
-            /**
-             * 拷贝文件到正式目录
-             */
-            String tempFilePath = appConfig.getProjectFolder() + Constants.FILE_FOLDER + Constants.FILE_FOLDER_TEMP + fileDto.getFilePath();
-
-            File tempFile = new File(tempFilePath);
-
-            String targetFilePath = appConfig.getProjectFolder() + Constants.FILE_FOLDER + Constants.FILE_VIDEO + fileDto.getFilePath();
-            File taregetFile = new File(targetFilePath);
-            if (!taregetFile.exists()) {
-                taregetFile.mkdirs();
-            }
-            FileUtils.copyDirectory(tempFile, taregetFile);
-
-            /**
-             * 删除临时目录
-             */
-            FileUtils.forceDelete(tempFile);
-            redisComponent.delVideoFileInfo(videoInfoFile.getUserId(), videoInfoFile.getUploadId());
-
-            /**
-             * 合并文件
-             */
-            String completeVideo = targetFilePath + Constants.TEMP_VIDEO_NAME;
-            this.union(targetFilePath, completeVideo, true);
-
-            /**
-             * 获取播放时长
-             */
-            Integer duration = fFmpegUtils.getVideoInfoDuration(completeVideo);
-            updateFilePost.setDuration(duration);
-            updateFilePost.setFileSize(new File(completeVideo).length());
-            updateFilePost.setFilePath(Constants.FILE_VIDEO + fileDto.getFilePath());
-            updateFilePost.setTransferResult(VideoFileTransferResultEnum.SUCCESS.getStatus());
-
-            /**
-             * ffmpeg切割文件
-             */
-            this.convertVideo2Ts(completeVideo);
-        } catch (Exception e) {
-            log.error("文件转码失败", e);
-            updateFilePost.setTransferResult(VideoFileTransferResultEnum.FAIL.getStatus());
-        } finally {
-            //更新文件状态
-            videoInfoFilePostMapper.updateByUploadIdAndUserId(updateFilePost, videoInfoFile.getUploadId(), videoInfoFile.getUserId());
-            //更新视频信息
-            VideoInfoFilePostQuery fileQuery = new VideoInfoFilePostQuery();
-            fileQuery.setVideoId(videoInfoFile.getVideoId());
-            fileQuery.setTransferResult(VideoFileTransferResultEnum.FAIL.getStatus());
-            Integer failCount = videoInfoFilePostMapper.selectCount(fileQuery);
-            if (failCount > 0) {
-                VideoInfoPost videoUpdate = new VideoInfoPost();
-                videoUpdate.setStatus(VideoStatusEnum.STATUS1.getStatus());
-                videoInfoPostMapper.updateByVideoId(videoUpdate, videoInfoFile.getVideoId());
-                return;
-            }
-            fileQuery.setTransferResult(VideoFileTransferResultEnum.TRANSFER.getStatus());
-            Integer transferCount = videoInfoFilePostMapper.selectCount(fileQuery);
-            if (transferCount == 0) {
-                Integer duration = videoInfoFilePostMapper.sumDuration(videoInfoFile.getVideoId());
-                VideoInfoPost videoUpdate = new VideoInfoPost();
-                videoUpdate.setStatus(VideoStatusEnum.STATUS2.getStatus());
-                videoUpdate.setDuration(duration);
-                videoInfoPostMapper.updateByVideoId(videoUpdate, videoInfoFile.getVideoId());
-            }
-        }
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
+    @GlobalTransactional(rollbackFor =  Exception.class)
     public void auditVideo(String videoId, Integer status, String reason) {
         VideoStatusEnum videoStatusEnum = VideoStatusEnum.getByStatus(status);
         if (videoStatusEnum == null) {
@@ -518,6 +445,33 @@ public class VideoInfoPostServiceImpl implements VideoInfoPostService {
 
         //删除视频文件
         videoFile.delete();
+    }
+
+    @Override
+    @GlobalTransactional(rollbackFor = Exception.class)
+    public void transferVideoFile4Db(String videoId, String uploadId, String userId, VideoInfoFilePost updateFilePost) {
+        //更新文件状态
+        videoInfoFilePostMapper.updateByUploadIdAndUserId(updateFilePost, uploadId, userId);
+        //更新视频信息
+        VideoInfoFilePostQuery fileQuery = new VideoInfoFilePostQuery();
+        fileQuery.setVideoId(videoId);
+        fileQuery.setTransferResult(VideoFileTransferResultEnum.FAIL.getStatus());
+        Integer failCount = videoInfoFilePostMapper.selectCount(fileQuery);
+        if (failCount > 0) {
+            VideoInfoPost videoUpdate = new VideoInfoPost();
+            videoUpdate.setStatus(VideoStatusEnum.STATUS1.getStatus());
+            videoInfoPostMapper.updateByVideoId(videoUpdate, videoId);
+            return;
+        }
+        fileQuery.setTransferResult(VideoFileTransferResultEnum.TRANSFER.getStatus());
+        Integer transferCount = videoInfoFilePostMapper.selectCount(fileQuery);
+        if (transferCount == 0) {
+            Integer duration = videoInfoFilePostMapper.sumDuration(videoId);
+            VideoInfoPost videoUpdate = new VideoInfoPost();
+            videoUpdate.setStatus(VideoStatusEnum.STATUS2.getStatus());
+            videoUpdate.setDuration(duration);
+            videoInfoPostMapper.updateByVideoId(videoUpdate, videoId);
+        }
     }
 
 }

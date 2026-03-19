@@ -18,6 +18,7 @@ import com.Easylive.mappers.UserActionMapper;
 import com.Easylive.mappers.VideoCommentMapper;
 import com.Easylive.service.UserActionService;
 import com.Easylive.utils.StringTools;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -169,7 +170,7 @@ public class UserActionServiceImpl implements UserActionService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @GlobalTransactional(rollbackFor =  Exception.class)
     public void saveAction(UserAction bean) {
         VideoInfo videoInfo = videoClient.getVideoInfoPostByVideoId(bean.getVideoId());
         if (videoInfo == null) {

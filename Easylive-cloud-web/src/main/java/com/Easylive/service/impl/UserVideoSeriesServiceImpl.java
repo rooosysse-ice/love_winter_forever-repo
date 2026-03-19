@@ -16,6 +16,7 @@ import com.Easylive.mappers.UserVideoSeriesVideoMapper;
 import com.Easylive.mappers.VideoInfoMapper;
 import com.Easylive.service.UserVideoSeriesService;
 import com.Easylive.utils.StringTools;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -144,7 +145,7 @@ public class UserVideoSeriesServiceImpl implements UserVideoSeriesService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @GlobalTransactional(rollbackFor =  Exception.class)
     public void saveUserVideoSeries(UserVideoSeries bean, String videoIds) {
         if (bean.getSeriesId() == null && StringTools.isEmpty(videoIds)) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
@@ -226,7 +227,7 @@ public class UserVideoSeriesServiceImpl implements UserVideoSeriesService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @GlobalTransactional(rollbackFor =  Exception.class)
     public void delVideoSeries(String userId, Integer seriesId) {
         UserVideoSeriesQuery seriesQuery = new UserVideoSeriesQuery();
         seriesQuery.setUserId(userId);

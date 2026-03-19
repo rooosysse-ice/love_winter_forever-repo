@@ -1,5 +1,6 @@
 package com.Easylive.service.impl;
 
+import com.Easylive.annotation.GlobalInterceptor;
 import com.Easylive.api.consumer.VideoClient;
 import com.Easylive.entity.constants.Constants;
 import com.Easylive.entity.enums.PageSize;
@@ -18,6 +19,7 @@ import com.Easylive.mappers.VideoDanmuMapper;
 //import com.Easylive.mappers.VideoInfoMapper;
 import com.Easylive.service.VideoDanmuService;
 import com.Easylive.utils.StringTools;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -142,7 +144,7 @@ public class VideoDanmuServiceImpl implements VideoDanmuService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @GlobalTransactional(rollbackFor =  Exception.class)
     public void saveVideoDanmu(VideoDanmu bean) {
         VideoInfo videoInfo = videoClient.getVideoInfoByVideoId(bean.getVideoId());
         if (videoInfo == null) {

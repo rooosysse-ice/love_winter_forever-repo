@@ -20,6 +20,7 @@ import com.Easylive.mappers.VideoCommentMapper;
 //import com.Easylive.mappers.VideoInfoMapper;
 import com.Easylive.service.VideoCommentService;
 import com.Easylive.utils.StringTools;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -148,7 +149,7 @@ public class VideoCommentServiceImpl implements VideoCommentService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @GlobalTransactional(rollbackFor =  Exception.class)
     public void postComment(VideoComment comment, Integer replyCommentId) {
 
         VideoInfo videoInfo = videoClient.getVideoInfoByVideoId(comment.getVideoId());
@@ -211,7 +212,7 @@ public class VideoCommentServiceImpl implements VideoCommentService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @GlobalTransactional(rollbackFor =  Exception.class)
     public void topComment(Integer commentId, String userId) {
         this.cancelTopComment(commentId, userId);
         VideoComment videoComment = new VideoComment();

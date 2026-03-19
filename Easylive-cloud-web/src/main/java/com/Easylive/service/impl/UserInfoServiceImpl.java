@@ -24,6 +24,7 @@ import com.Easylive.mappers.UserInfoMapper;
 import com.Easylive.service.UserInfoService;
 import com.Easylive.utils.CopyTools;
 import com.Easylive.utils.StringTools;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -203,7 +204,7 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @GlobalTransactional(rollbackFor =  Exception.class)
     public void register(String email, String nickName, String password) {
         // 根据邮箱获取对象
         UserInfo userInfo = this.userInfoMapper.selectByEmail(email);
@@ -255,7 +256,7 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
-    @Transactional
+    @GlobalTransactional
     public void updateUserInfo(UserInfo userInfo, TokenUserInfoDto tokenUserInfoDto) {
         UserInfo dbInfo = this.userInfoMapper.selectByUserId(userInfo.getUserId());
         if (!dbInfo.getNickName().equals(userInfo.getNickName()) && dbInfo.getCurrentCoinCount() < Constants.UPDATE_NICK_NAME_COIN) {

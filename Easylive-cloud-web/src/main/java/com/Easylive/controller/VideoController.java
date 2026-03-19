@@ -1,5 +1,6 @@
 package com.Easylive.controller;
 
+import com.Easylive.api.consumer.InteractClient;
 import com.Easylive.component.EsSearchComponent;
 import com.Easylive.component.RedisComponent;
 import com.Easylive.entity.constants.Constants;
@@ -44,9 +45,9 @@ public class VideoController extends ABaseController {
 
     @Resource
     private RedisComponent redisComponent;
-//
-//    @Resource
-//    private UserActionService userActionService;
+
+    @Resource
+    private InteractClient interactClient;
 
     @Resource
     private EsSearchComponent esSearchComponent;
@@ -92,8 +93,7 @@ public class VideoController extends ABaseController {
             actionQuery.setUserId(userInfoDto.getUserId());
             actionQuery.setActionTypeArray(new Integer[]{UserActionTypeEnum.VIDEO_LIKE.getType(), UserActionTypeEnum.VIDEO_COLLECT.getType(),
                     UserActionTypeEnum.VIDEO_COIN.getType(),});
-            //TODO 调用互动模块获取用户行为
-//            userActionList = userActionService.findListByParam(actionQuery);
+            userActionList = interactClient.getUserActionList(actionQuery);
         }
 
         VideoInfoResultVo resultVo = new VideoInfoResultVo(videoInfo,new ArrayList<>());

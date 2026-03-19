@@ -1,5 +1,6 @@
 package com.Easylive.service.impl;
 
+import com.Easylive.api.consumer.WebClient;
 import com.Easylive.component.RedisComponent;
 import com.Easylive.entity.constants.Constants;
 import com.Easylive.entity.enums.PageSize;
@@ -13,6 +14,7 @@ import com.Easylive.mappers.CategoryInfoMapper;
 import com.Easylive.service.CategoryInfoService;
 //import com.Easylive.service.VideoInfoService;
 import com.Easylive.utils.StringTools;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -32,6 +34,8 @@ public class CategoryInfoServiceImpl implements CategoryInfoService {
 
     @Resource
     private RedisComponent redisComponent;
+    @Autowired
+    private WebClient webClient;
 
 //    @Resource
 //    private VideoInfoService videoInfoService;
@@ -200,7 +204,7 @@ public class CategoryInfoServiceImpl implements CategoryInfoService {
         VideoInfoQuery videoInfoQuery = new VideoInfoQuery();
         videoInfoQuery.setCategoryIdOrPCategoryId(categoryId);
         // TODO web模块提供分类下的视频数量
-        Integer count = 0; //videoInfoService.findCountByParam(videoInfoQuery);
+        Integer count = webClient.getVideoCount(videoInfoQuery);
         if (count > 0) {
             throw new BusinessException("分类下存在视频，不能删除");
         }

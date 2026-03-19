@@ -1,5 +1,6 @@
 package com.Easylive.service.impl;
 
+import com.Easylive.api.consumer.InteractClient;
 import com.Easylive.component.EsSearchComponent;
 import com.Easylive.component.RedisComponent;
 import com.Easylive.entity.config.AppConfig;
@@ -15,6 +16,7 @@ import com.Easylive.mappers.*;
 import com.Easylive.service.UserInfoService;
 import com.Easylive.service.VideoInfoService;
 import com.Easylive.utils.StringTools;
+import io.seata.spring.annotation.GlobalTransactional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Service;
@@ -52,11 +54,8 @@ public class VideoInfoServiceImpl implements VideoInfoService {
     @Resource
     private VideoInfoFilePostMapper<VideoInfoFilePost, VideoInfoFilePostQuery> videoInfoFilePostMapper;
 
-//    @Resource
-//    private VideoDanmuMapper<VideoDanmu, VideoDanmuQuery> videoDanmuMapper;
-//
-//    @Resource
-//    private VideoCommentMapper<VideoComment, VideoCommentQuery> videoCommentMapper;
+    @Resource
+    private InteractClient interactClient;
 
     @Resource
     private UserInfoService userInfoService;
@@ -174,7 +173,7 @@ public class VideoInfoServiceImpl implements VideoInfoService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @GlobalTransactional(rollbackFor =  Exception.class)
     public void changeInteraction(String videoId, String userId, String interaction) {
         VideoInfo videoInfo = new VideoInfo();
         videoInfo.setInteraction(interaction);
@@ -193,7 +192,7 @@ public class VideoInfoServiceImpl implements VideoInfoService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @GlobalTransactional(rollbackFor =  Exception.class)
     public void deleteVideo(String videoId, String userId) {
         VideoInfoPost videoInfoPost = this.videoInfoPostMapper.selectByVideoId(videoId);
         if (videoInfoPost == null || userId != null && !userId.equals(videoInfoPost.getUserId())) {
@@ -232,6 +231,9 @@ public class VideoInfoServiceImpl implements VideoInfoService {
 //            VideoCommentQuery videoCommentQuery = new VideoCommentQuery();
 //            videoCommentQuery.setVideoId(videoId);
 //            videoCommentMapper.deleteByParam(videoCommentQuery);
+
+            interactClient.delCommentByVideoId(videoId);
+            interactClient.delDanmuByVideoId(videoId);
 
             //删除文件
             for (VideoInfoFile item : videoInfoFileList) {

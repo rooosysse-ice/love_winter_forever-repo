@@ -12,6 +12,7 @@ import com.Easylive.entity.po.VideoInfoFilePost;
 import com.Easylive.entity.po.VideoInfoPost;
 import com.Easylive.entity.query.VideoInfoFilePostQuery;
 import com.Easylive.entity.query.VideoInfoPostQuery;
+import com.Easylive.entity.query.VideoInfoQuery;
 import com.Easylive.entity.vo.PaginationResultVO;
 import com.Easylive.entity.vo.ResponseVO;
 import com.Easylive.mappers.VideoInfoPostMapper;
@@ -21,6 +22,7 @@ import com.Easylive.service.VideoInfoService;
 import com.Easylive.service.impl.VideoInfoPostServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -106,6 +108,17 @@ public class VideoInfoApi {
         postQuery.setVideoId(videoId);
         List<VideoInfoFilePost> videoInfoFilePostsList = videoInfoFilePostService.findListByParam(postQuery);
         return videoInfoFilePostsList;
+    }
+
+    @RequestMapping("/getVideoCount")
+    public Integer getVideoCount(@RequestBody VideoInfoQuery videoInfoQuery) {
+        return videoInfoService.findCountByParam(videoInfoQuery);
+    }
+
+    @RequestMapping("/transferVideoFile4Db")
+    public void transferVideoFile4Db(@RequestParam String videoId, @RequestParam String uploadId, @RequestParam String userId,
+                                     @RequestBody VideoInfoFilePost updateFilePost) {
+        videoInfoPostService.transferVideoFile4Db(videoId, uploadId, userId, updateFilePost);
     }
 
 }

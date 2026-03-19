@@ -1,6 +1,10 @@
 package com.Easylive.filter;
 
 
+import com.Easylive.entity.constants.Constants;
+import com.Easylive.entity.enums.ResponseCodeEnum;
+import com.Easylive.exception.BusinessException;
+import com.Easylive.utils.StringTools;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -18,11 +22,31 @@ public class AdminFilter extends AbstractGatewayFilterFactory {
     public GatewayFilter apply(Object config) {
         return (exchange, chain) -> {
             ServerHttpRequest request = exchange.getRequest();
-            String rawPath = request.getURI().getRawPath();
-            log.info("admin rawpath: {}", rawPath);
-            // TODO 管理端必须登录才行
+
+            if (request.getURI().getRawPath().contains(URL_ACCOUNT)) {
+                return chain.filter(exchange);
+            }
+            String token = getToken(request);
+
+            //获取文件直接从cookie中获取token
+            if (request.getURI().getRawPath().contains(URL_FILE)) {
+                token = getTokenFromCookie(request);
+            }
+
+            if (StringTools.isEmpty(token)) {
+                throw new BusinessException(ResponseCodeEnum.CODE_901);
+            }
             return chain.filter(exchange);
         };
+    }
+
+    private String getToken(ServerHttpRequest request) {
+        String token = request.getHeaders().getFirst(Constants.TOKEN_ADMIN);
+        return token;
+    }
+
+    private String getTokenFromCookie(ServerHttpRequest request) {
+        return request.getCookies().getFirst(Constants.TOKEN_ADMIN).getValue();
     }
 
 }
