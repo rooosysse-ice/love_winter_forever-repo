@@ -2,13 +2,22 @@ package com.Easylive.utils;
 
 import com.Easylive.entity.config.AppConfig;
 import com.Easylive.entity.constants.Constants;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 
+@Slf4j
 @Component
 public class FFmpegUtils {
 
@@ -69,7 +78,7 @@ public class FFmpegUtils {
      * @param videoFilePath
      */
     public void convertHevc2Mp4(String newFileName, String videoFilePath) {
-        String CMD_HEVC_264 = "ffmpeg -i %s -c:v libx264 -crf 20 %s";
+        String CMD_HEVC_264 = "ffmpeg -i \"%s\" -c:v libx264 -crf 20 \"%s\"";
         String cmd = String.format(CMD_HEVC_264, newFileName, videoFilePath);
         ProcessUtils.executeCommand(cmd, appConfig.getShowFFmpegLog());
     }
@@ -90,11 +99,37 @@ public class FFmpegUtils {
         //生成索引文件.m3u8 和切片.ts
         cmd = String.format(CMD_CUT_TS, tsPath, tsFolder.getPath() + "/" + Constants.M3U8_NAME, tsFolder.getPath());
         ProcessUtils.executeCommand(cmd, appConfig.getShowFFmpegLog());
+        //修正m3u8中的分片路径为相对路径
+        postProcessM3u8(new File(tsFolder.getPath() + "/" + Constants.M3U8_NAME));
         //删除index.ts
         new File(tsPath).delete();
     }
 
-
-
+    /**
+     * 将m3u8中的绝对路径分片URI替换为相对路径
+     */
+    private void postProcessM3u8(File m3u8File) {
+        try {
+            List<String> lines = new ArrayList<>();
+            try (BufferedReader reader = new BufferedReader(new FileReader(m3u8File))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (!line.startsWith("#") && !line.isEmpty()) {
+                        lines.add(new File(line).getName());
+                    } else {
+                        lines.add(line);
+                    }
+                }
+            }
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(m3u8File))) {
+                for (String line : lines) {
+                    writer.write(line);
+                    writer.newLine();
+                }
+            }
+        } catch (IOException e) {
+            log.error("M3U8后处理失败", e);
+        }
+    }
 
 }

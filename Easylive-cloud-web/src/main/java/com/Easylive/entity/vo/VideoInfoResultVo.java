@@ -6,21 +6,21 @@ import java.util.List;
 
 public class VideoInfoResultVo {
 
-    private VideoInfo videoInfo;
+    private VideoInfoVo videoInfo;
     private List userActionList;
 
     public VideoInfoResultVo() {}
 
-    public VideoInfoResultVo(VideoInfo videoInfo, List userActionList) {
+    public VideoInfoResultVo(VideoInfoVo videoInfo, List userActionList) {
         this.videoInfo = videoInfo;
         this.userActionList = userActionList;
     }
 
-    public VideoInfo getVideoInfo() {
+    public VideoInfoVo getVideoInfo() {
         return videoInfo;
     }
 
-    public void setVideoInfo(VideoInfo videoInfo) {
+    public void setVideoInfo(VideoInfoVo videoInfo) {
         this.videoInfo = videoInfo;
     }
 

@@ -15,10 +15,12 @@ import com.Easylive.entity.query.VideoInfoQuery;
 import com.Easylive.entity.vo.PaginationResultVO;
 import com.Easylive.entity.vo.ResponseVO;
 import com.Easylive.entity.vo.VideoInfoResultVo;
+import com.Easylive.entity.vo.VideoInfoVo;
 import com.Easylive.exception.BusinessException;
 //import com.Easylive.service.UserActionService;
 import com.Easylive.service.VideoInfoFileService;
 import com.Easylive.service.VideoInfoService;
+import com.Easylive.utils.CopyTools;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -96,7 +98,9 @@ public class VideoController extends ABaseController {
             userActionList = interactClient.getUserActionList(actionQuery);
         }
 
-        VideoInfoResultVo resultVo = new VideoInfoResultVo(videoInfo,new ArrayList<>());
+        VideoInfoResultVo resultVo = new VideoInfoResultVo();
+        resultVo.setVideoInfo(CopyTools.copy(videoInfo, VideoInfoVo.class));
+        resultVo.setUserActionList(userActionList);
         return getSuccessResponseVO(resultVo);
     }
 

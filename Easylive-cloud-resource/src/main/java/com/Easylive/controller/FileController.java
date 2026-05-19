@@ -80,6 +80,7 @@ public class FileController extends ABaseController {
     protected void readFile(HttpServletResponse response, String filePath) {
         File file = new File(appConfig.getProjectFolder() + Constants.FILE_FOLDER + filePath);
         if (!file.exists()) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
         try (OutputStream out = response.getOutputStream(); FileInputStream in = new FileInputStream(file)) {
@@ -181,6 +182,7 @@ public class FileController extends ABaseController {
             return;
         }
         String filePath = videoInfoFile.getFilePath();
+        response.setContentType("application/x-mpegURL");
         readFile(response, filePath + "/" + Constants.M3U8_NAME);
 
         VideoPlayInfoDto videoPlayInfoDto = new VideoPlayInfoDto();
@@ -198,7 +200,11 @@ public class FileController extends ABaseController {
     @GlobalInterceptor
     public void getVideoResourceTs(HttpServletResponse response, @PathVariable @NotEmpty String fileId, @PathVariable @NotNull String ts) {
         VideoInfoFile videoInfoFile = videoClient.getVideoInfoFileByFileId(fileId);
+        if (videoInfoFile == null) {
+            return;
+        }
         String filePath = videoInfoFile.getFilePath() + "";
+        response.setContentType("video/mp2t");
         readFile(response, filePath + "/" + ts);
     }
 }
